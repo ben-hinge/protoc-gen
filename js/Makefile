@@ -13,8 +13,8 @@ protoc-gen-js: $(SOURCE_FILES) $(PROTO_GEN_FILES_CC)
 		-lprotoc \
 		-o $@
 
-js/%.pb.cc: js/%.proto
-	protoc --cpp_out=./js -I$(PROTOBUF) --proto_path=js $<
+%.pb.cc: %.proto
+	protoc --cpp_out=. -I$(PROTOBUF) --proto_path=. $<
 
 clean:
 	rm -fr *.pb.*
