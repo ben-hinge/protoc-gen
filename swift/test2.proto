@@ -1,0 +1,4 @@
+message TestMessage {
+  required int32 integer = 1;
+  optional string string = 2;
+}
