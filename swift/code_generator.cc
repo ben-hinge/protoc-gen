@@ -138,6 +138,9 @@ string SwiftTypeForField(const google::protobuf::FieldDescriptor* field, bool fu
   case google::protobuf::FieldDescriptor::TYPE_INT32:
     type = "Int"; 
     break;
+  case google::protobuf::FieldDescriptor::TYPE_INT64:
+    type = "Int"; 
+    break;
   case google::protobuf::FieldDescriptor::TYPE_FLOAT:
     type = "Float32"; 
     break;
@@ -183,6 +186,12 @@ string DefaultValueForField(const google::protobuf::FieldDescriptor* field) {
         }
         break;
       case internal::WireFormatLite::CPPTYPE_INT32:
+        default_value = field->is_optional() ? "nil" : "0";
+        if (field->has_default_value()) { 
+          default_value = to_string(field->default_value_int32());
+        }
+        break;
+      case internal::WireFormatLite::CPPTYPE_INT64:
         default_value = field->is_optional() ? "nil" : "0";
         if (field->has_default_value()) { 
           default_value = to_string(field->default_value_int32());
@@ -304,15 +313,13 @@ void CodeGenerator::GenDescriptor(
   }
   printer->Print("\n");
 
-  printer->Print("init(sizeInBytes: Int, ");
+  printer->Print("init(sizeInBytes: Int");
   for (int i = 0, lastI = message->field_count() - 1; i <= lastI; ++i) {
+    printer->Print(", ");
     const google::protobuf::FieldDescriptor *field = message->field(i);
     printer->Print("$name$: $type$",
                    "name", field->camelcase_name(),
                    "type", SwiftTypeForField(field, false));
-    if (i != lastI) {
-      printer->Print(", ");
-    }
   }
   printer->Print(") {\n");
   printer->Indent();
@@ -331,7 +338,7 @@ void CodeGenerator::GenDescriptor(
   CodeGenerator::GenMessage_fromReader(message, printer);
   printer->Print("\n");
 
-  CodeGenerator::GenMessage_sizeInBytes(message, printer);
+  CodeGenerator::GenMessage_sizeOf(message, printer);
   printer->Print("\n");
 
   CodeGenerator::GenMessage_builder(message, printer);
@@ -345,33 +352,18 @@ void CodeGenerator::GenDescriptor(
     printer->Print("\n");
   }
 
+  for (int i = 0; i < message->enum_type_count(); ++i) {
+    const google::protobuf::EnumDescriptor *enum_desc = message->enum_type(i);
+    CodeGenerator::GenEnum(
+        enum_desc,
+        printer);
+    printer->Print("\n");
+  }
+
   printer->Outdent();
   printer->Print("}\n\n");
 
   CodeGenerator::GenMessageBuilder(message, printer);
-
-/*
-  for (int i = 0; i < message->enum_type_count(); ++i) {
-    const google::protobuf::EnumDescriptor *enum_desc = message->enum_type(i);
-    printer->Print("$name$.$nested_name$ = {\n",
-                   "name", message->name(),
-                   "nested_name", enum_desc->name());
-    printer->Indent();
-    for (int i = 0; i < enum_desc->value_count(); ++i) {
-      std::string format = "$key$: $value$,\n";
-      if (i == enum_desc->value_count() - 1) {
-        format = "$key$: $value$\n";
-      }
-      std::ostringstream number;
-      number << enum_desc->value(i)->number();
-      printer->Print(format.c_str(),
-                     "key", enum_desc->value(i)->name(),
-                     "value", number.str());
-    }
-    printer->Outdent();
-    printer->Print("}\n");
-  }
-*/
 
   printer->Print("\n");
 }
@@ -415,10 +407,9 @@ void CodeGenerator::GenMessage_fromReader(
       printer->Print("var limit = r.pushLimit(r.readVarInt())\n");
 
       if (field->is_repeated()) {
-        printer->Print("var a = this.$name$ || (this.$name$ = [])\n",
+        printer->Print("$name$.append($type$.fromReader(r))\n",
+                       "type", type,
                        "name", name);
-        printer->Print("a.append($type$.fromReader(r))\n",
-                       "type", type);
       } else {
         printer->Print("$name$ = $type$.fromReader(r)\n",
                        "type", type,
@@ -429,11 +420,11 @@ void CodeGenerator::GenMessage_fromReader(
     } else if (field->type() == google::protobuf::FieldDescriptor::TYPE_ENUM) {
       string type = field->enum_type()->name();
       if (field->is_repeated()) {
-        printer->Print("$name$.append($type$(rawValue: r.readVarInt()))\n",
+        printer->Print("$name$.append($type$(rawValue: r.readVarInt())!)\n",
                        "type", type,
                        "name", name);
       } else {
-        printer->Print("$name$ = $type$(rawValue: r.readVarInt())\n",
+        printer->Print("$name$ = $type$(rawValue: r.readVarInt())!\n",
                        "type", type,
                        "name", name);
       }
@@ -442,6 +433,8 @@ void CodeGenerator::GenMessage_fromReader(
       if (field->type() == google::protobuf::FieldDescriptor::TYPE_BOOL) {
         read_func = "readBool";
       } else if (field->type() == google::protobuf::FieldDescriptor::TYPE_INT32) {
+        read_func = "readVarInt";
+      } else if (field->type() == google::protobuf::FieldDescriptor::TYPE_INT64) {
         read_func = "readVarInt";
       } else if (field->type() == google::protobuf::FieldDescriptor::TYPE_FLOAT) {
         read_func = "readFloat32";
@@ -476,7 +469,7 @@ void CodeGenerator::GenMessage_fromReader(
   printer->Print("}\n");
 
   printer->Print("\n");
-  printer->Print("let sizeInBytes = $name$.sizeInBytes(",
+  printer->Print("let sizeInBytes = $name$.sizeOf(",
                   "name", message->name());
   for (int i = 0, lastI = message->field_count() - 1; i <= lastI; ++i) {
     const google::protobuf::FieldDescriptor *field = message->field(i);
@@ -493,15 +486,13 @@ void CodeGenerator::GenMessage_fromReader(
   }
   printer->Print(")\n");
 
-  printer->Print("return $name$(sizeInBytes: sizeInBytes, ",
+  printer->Print("return $name$(sizeInBytes: sizeInBytes",
                   "name", message->name());
   for (int i = 0, lastI = message->field_count() - 1; i <= lastI; ++i) {
+    printer->Print(", ");
     const google::protobuf::FieldDescriptor *field = message->field(i);
     printer->Print("$name$: $name$",
                    "name", field->camelcase_name());
-    if (i != lastI) {
-      printer->Print(", ");
-    }
   }
   printer->Print(")\n");
 
@@ -590,7 +581,7 @@ void CodeGenerator::GenMessageBuilder(
                  "type", message->name());
   printer->Indent();
 
-  printer->Print("let sizeInBytes = $name$.sizeInBytes(",
+  printer->Print("let sizeInBytes = $name$.sizeOf(",
                   "name", message->name());
   for (int i = 0, lastI = message->field_count() - 1; i <= lastI; ++i) {
     const google::protobuf::FieldDescriptor *field = message->field(i);
@@ -606,15 +597,13 @@ void CodeGenerator::GenMessageBuilder(
     }
   }
   printer->Print(")\n");
-  printer->Print("return $name$(sizeInBytes: sizeInBytes, ",
+  printer->Print("return $name$(sizeInBytes: sizeInBytes",
                   "name", message->name());
   for (int i = 0, lastI = message->field_count() - 1; i <= lastI; ++i) {
+    printer->Print(", ");
     const google::protobuf::FieldDescriptor *field = message->field(i);
     printer->Print("$name$: $name$",
                    "name", field->camelcase_name());
-    if (i != lastI) {
-      printer->Print(", ");
-    }
   }
   printer->Print(")\n");
 
@@ -667,6 +656,8 @@ void CodeGenerator::GenMessage_toWriter(
         write_func = "writeBool";
       } else if (field->type() == google::protobuf::FieldDescriptor::TYPE_INT32) {
         write_func = "writeVarInt";
+      } else if (field->type() == google::protobuf::FieldDescriptor::TYPE_INT64) {
+        write_func = "writeVarInt";
       } else if (field->type() == google::protobuf::FieldDescriptor::TYPE_FLOAT) {
         write_func = "writeFloat32";
       } else if (field->type() == google::protobuf::FieldDescriptor::TYPE_DOUBLE) {
@@ -698,11 +689,11 @@ void CodeGenerator::GenMessage_toWriter(
   printer->Print("}\n");
 }
 
-void CodeGenerator::GenMessage_sizeInBytes(
+void CodeGenerator::GenMessage_sizeOf(
     const google::protobuf::Descriptor *message,
     google::protobuf::io::Printer *printer) 
 {
-  printer->Print("class func sizeInBytes(",
+  printer->Print("class func sizeOf(",
                  "name", message->name());
   for (int i = 0, lastI = message->field_count() - 1; i <= lastI; ++i) {
     const google::protobuf::FieldDescriptor *field = message->field(i);
@@ -752,6 +743,10 @@ void CodeGenerator::GenMessage_sizeInBytes(
       printer->Print("n += $size_of_tag$ + sizeOfVarInt(Int($name$))\n",
                      "size_of_tag", size_of_tag,
                      "name", name);
+    } else if (field->type() == google::protobuf::FieldDescriptor::TYPE_INT64) {
+      printer->Print("n += $size_of_tag$ + sizeOfVarInt(Int($name$))\n",
+                     "size_of_tag", size_of_tag,
+                     "name", name);
     } else if (field->type() == google::protobuf::FieldDescriptor::TYPE_FLOAT) {
       printer->Print("n += $size_of_tag$ + 4\n",
                      "size_of_tag", size_of_tag);
@@ -784,7 +779,7 @@ void CodeGenerator::GenEnum(
     google::protobuf::io::Printer *printer) 
 {
   printer->Print("public enum $name$: Int {\n",
-                 "name", enum_desc->full_name());
+                 "name", enum_desc->name());
   printer->Indent();
   for (int i = 0; i < enum_desc->value_count(); ++i) {
     string number = to_string(enum_desc->value(i)->number());

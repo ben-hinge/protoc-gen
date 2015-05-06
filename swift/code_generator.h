@@ -70,7 +70,7 @@ class CodeGenerator : public ::google::protobuf::compiler::CodeGenerator {
       const google::protobuf::Descriptor *message,
       google::protobuf::io::Printer *printer);
 
-  static void GenMessage_sizeInBytes(
+  static void GenMessage_sizeOf(
       const google::protobuf::Descriptor *message,
       google::protobuf::io::Printer *printer);
 };
