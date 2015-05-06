@@ -1,7 +1,4 @@
-
 *.swp
-*.pb.cc
-*.pb.h
-protoc-gen-js
-node_modules
+protoc-gen-*
 test.*
+*.pb.*
