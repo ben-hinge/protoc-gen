@@ -1,18 +1,31 @@
-enum Enum {
-	one = 1;
-	two = 2;
-	three = 3;
+message UpdateProfileCommand {
+    required string emailAddress = 1;
+    optional bool failIfAlreadyExists = 2;
+
+    optional string firstName = 3;
+    optional string lastName = 4;
+    optional string phoneNumber = 5;
+    optional string selfieImageURL = 6;
 }
 
-message TestMessage {
-  required int32 integer = 1;
-  optional string string = 2;
-  repeated string repeatedString = 3;
+message UpdateLocationCommand {
+    required string name = 1;
+    optional bool failIfAlreadyExists = 2;
+    optional double latitude = 3;
+    optional double longitude = 4;
+    optional int32 radiusInMeters = 5;
+}
 
-  message Nested {
-  	required float float = 1;
-  }
+message CheckInCommand {
+    required string emailAddress = 1;
+    required string locationName = 2;
+    optional string note = 3;
+    optional int32 validForAtLeastSeconds = 4;
+}
 
-  required Nested requiredNested = 4;
-  required Enum requiredEnum = 5;
+message CheckOutCommand {
+    required string emailAddress = 1;
+    optional string note = 3;
+    optional int32 validForAtLeastSeconds = 4;
+    optional bool keepPreviousLocationIfValid = 5;
 }

@@ -72,6 +72,63 @@ int sizeOfVarInt(long long v) {
   return n;
 }
 
+int CEscapeInternal(const char* src, int src_len, char* dest,
+                    int dest_len, bool use_hex, bool utf8_safe) {
+  const char* src_end = src + src_len;
+  int used = 0;
+  bool last_hex_escape = false;
+
+  for (; src < src_end; src++) {
+    if (dest_len - used < 2) {
+       return -1;
+    }
+
+    bool is_hex_escape = false;
+    switch (*src) {
+      case '\n': dest[used++] = '\\'; dest[used++] = 'n';  break;
+      case '\r': dest[used++] = '\\'; dest[used++] = 'r';  break;
+      case '\t': dest[used++] = '\\'; dest[used++] = 't';  break;
+      case '\"': dest[used++] = '\\'; dest[used++] = '\"'; break;
+      case '\'': dest[used++] = '\\'; dest[used++] = '\''; break;
+      case '\\': dest[used++] = '\\'; dest[used++] = '\\'; break;
+      default:
+        if ((!utf8_safe || static_cast<uint8>(*src) < 0x80) &&
+            (!isprint(*src) ||
+             (last_hex_escape && isxdigit(*src)))) {
+          if (dest_len - used < 4) {
+            return -1;
+          }
+          sprintf(dest + used, (use_hex ? "\\x%02x" : "\\%03o"),
+                  static_cast<uint8>(*src));
+          is_hex_escape = use_hex;
+          used += 4;
+        } else {
+          dest[used++] = *src; break;
+        }
+    }
+    last_hex_escape = is_hex_escape;
+  }
+
+  if (dest_len - used < 1){
+    return -1;
+  }
+
+  dest[used] = '\0';
+  return used;
+}
+
+int CEscapeString(const char* src, int src_len, char* dest, int dest_len) {
+  return CEscapeInternal(src, src_len, dest, dest_len, false, false);
+}
+
+string CEscape(const string& src) {
+  const int dest_length = src.size() * 4 + 1;
+  scoped_array<char> dest(new char[dest_length]);
+  const int len = CEscapeInternal(src.data(), src.size(),
+                                  dest.get(), dest_length, false, false);
+  return string(dest.get(), len);
+}
+
 string SwiftTypeForField(const google::protobuf::FieldDescriptor* field, bool fully_qualified) {
   string type;
   switch (field->type()) {
@@ -119,6 +176,12 @@ string DefaultValueForField(const google::protobuf::FieldDescriptor* field) {
     default_value = "nil";
   } else {
     switch (field->cpp_type()) {
+      case internal::WireFormatLite::CPPTYPE_BOOL:
+        default_value = field->is_optional() ? "nil" : "false";
+        if (field->has_default_value()) { 
+          default_value = field->default_value_bool() ? "true" : "false";
+        }
+        break;
       case internal::WireFormatLite::CPPTYPE_INT32:
         default_value = field->is_optional() ? "nil" : "0";
         if (field->has_default_value()) { 
@@ -131,11 +194,18 @@ string DefaultValueForField(const google::protobuf::FieldDescriptor* field) {
           default_value = to_string(field->default_value_float());
         }
         break;
+      case internal::WireFormatLite::CPPTYPE_DOUBLE:
+        default_value = field->is_optional() ? "nil" : "0";
+        if (field->has_default_value()) { 
+          default_value = to_string(field->default_value_double());
+        }
+        break;
       case internal::WireFormatLite::CPPTYPE_STRING:
         default_value = field->is_optional() ? "nil" : "\"\"";
         if (field->has_default_value()) { 
-          default_value = field->default_value_string();
+          default_value = "\"" + CEscape(field->default_value_string()) + "\"";
         }
+        break;
       default: 
         break;
     }
