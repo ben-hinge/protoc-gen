@@ -90,6 +90,9 @@ string SwiftTypeForField(const google::protobuf::FieldDescriptor* field) {
   case google::protobuf::FieldDescriptor::TYPE_STRING:
     type = "String"; 
     break;
+  case google::protobuf::FieldDescriptor::TYPE_MESSAGE:
+    type = field->message_type()->full_name();
+    break;
   default:
     type = "/* unknown */";
     break;
@@ -99,6 +102,8 @@ string SwiftTypeForField(const google::protobuf::FieldDescriptor* field) {
   }
   if (field->is_optional()) {
     type = type + "?";
+  } else if (field->type() == google::protobuf::FieldDescriptor::TYPE_MESSAGE) {
+    type = type + "!";
   }
   return type;
 }
@@ -107,12 +112,20 @@ string DefaultValueForField(const google::protobuf::FieldDescriptor* field) {
   string default_value = "/* default value unknown */";
   if (field->is_repeated()) {
     default_value = "[]";
+  } else if (field->type() == google::protobuf::FieldDescriptor::TYPE_MESSAGE) {
+    default_value = "nil";
   } else {
     switch (field->cpp_type()) {
       case internal::WireFormatLite::CPPTYPE_INT32:
         default_value = field->is_optional() ? "nil" : "0";
         if (field->has_default_value()) { 
           default_value = to_string(field->default_value_int32());
+        }
+        break;
+      case internal::WireFormatLite::CPPTYPE_FLOAT:
+        default_value = field->is_optional() ? "nil" : "0";
+        if (field->has_default_value()) { 
+          default_value = to_string(field->default_value_float());
         }
         break;
       case internal::WireFormatLite::CPPTYPE_STRING:
@@ -164,12 +177,6 @@ bool CodeGenerator::Generate(
         file->message_type(i),
         &printer);
   }
-
-// private func sizeOfString(s: String) -> Int {
-//     let b = countElements(s.utf8)
-//     return sizeOfVarInt(b) + b
-// }
-
 
   printer.Print("private func sizeOfVarInt(v: Int) -> Int {\n");
   printer.Indent();
@@ -259,30 +266,31 @@ void CodeGenerator::GenDescriptor(
   printer->Print("}\n\n");
 
   CodeGenerator::GenMessage_toWriter(message, printer);
+  printer->Print("\n");
+
   CodeGenerator::GenMessage_fromReader(message, printer);
+  printer->Print("\n");
+
   CodeGenerator::GenMessage_sizeInBytes(message, printer);
+  printer->Print("\n");
+
   CodeGenerator::GenMessage_builder(message, printer);
+  printer->Print("\n");
+
+  for (int i = 0; i < message->nested_type_count(); ++i) {
+    const google::protobuf::Descriptor *nested_type = message->nested_type(i);
+    CodeGenerator::GenDescriptor(
+        nested_type,
+        printer);
+    printer->Print("\n");
+  }
 
   printer->Outdent();
   printer->Print("}\n\n");
 
   CodeGenerator::GenMessageBuilder(message, printer);
 
-/*  for (int i = 0; i < message->nested_type_count(); ++i) {
-    const google::protobuf::Descriptor *nested_type = message->nested_type(i);
-    printer->Print("$name$.$nested_name$ = function(){\n",
-                   "name", message->name(),
-                   "nested_name", nested_type->name());
-    printer->Indent();
-    CodeGenerator::GenDescriptor(
-        nested_type,
-        printer);
-    printer->Print("return $nested_name$\n",
-                   "nested_name", nested_type->name());
-    printer->Outdent();
-    printer->Print("}()\n");
-  }
-
+/*
   for (int i = 0; i < message->enum_type_count(); ++i) {
     const google::protobuf::EnumDescriptor *enum_desc = message->enum_type(i);
     printer->Print("$name$.$nested_name$ = {\n",
@@ -341,7 +349,24 @@ void CodeGenerator::GenMessage_fromReader(
 
     string name = field->camelcase_name();
 
-    {
+    if (field->type() == google::protobuf::FieldDescriptor::TYPE_MESSAGE) {
+      string type = field->message_type()->full_name();
+
+      printer->Print("var limit = r.pushLimit(r.readVarInt())\n");
+
+      if (field->is_repeated()) {
+        printer->Print("var a = this.$name$ || (this.$name$ = [])\n",
+                       "name", name);
+        printer->Print("a.append($type$.fromReader(r))\n",
+                       "type", type);
+      } else {
+        printer->Print("$name$ = $type$.fromReader(r)\n",
+                       "type", type,
+                       "name", name);
+      }
+
+      printer->Print("r.popLimit(limit)\n");
+    } else {
       std::string read_func;
       if (field->type() == google::protobuf::FieldDescriptor::TYPE_BOOL) {
         read_func = "readBool";
@@ -412,7 +437,7 @@ void CodeGenerator::GenMessage_fromReader(
   printer->Print(")\n");
 
   printer->Outdent();
-  printer->Print("}\n\n");
+  printer->Print("}\n");
 }
 
 void CodeGenerator::GenMessage_builder(
@@ -492,7 +517,8 @@ void CodeGenerator::GenMessageBuilder(
     printer->Print("}\n\n");
   }
 
-  printer->Print("public func build() -> TestMessage {\n");
+  printer->Print("public func build() -> $type$ {\n",
+                 "type", message->name());
   printer->Indent();
 
   printer->Print("let sizeInBytes = $name$.sizeInBytes(",
@@ -541,16 +567,27 @@ void CodeGenerator::GenMessage_toWriter(
     const google::protobuf::FieldDescriptor *field = message->field(i);
     string name = "self." + field->camelcase_name();
 
+    string tag = to_string(WireFormatLite::MakeTag(field->number(), WireFormat::WireTypeForField(field)));
+
     if (field->is_optional()) {
       printer->Print("if let v = $name$ {\n",
                      "name", name);
       printer->Indent();
       name = "v";
+    } else if (field->is_repeated()) {
+      printer->Print("for v in $name$ {\n",
+                     "name", name);
+      printer->Indent();
+      name = "v";
     }
-
-    string tag = to_string(WireFormatLite::MakeTag(field->number(), WireFormat::WireTypeForField(field)));
     
-    {
+    if (field->type() == google::protobuf::FieldDescriptor::TYPE_MESSAGE) {
+      printer->Print("w.writeVarInt($tag$)\n"
+                     "w.writeVarInt($name$.sizeInBytes)\n"
+                     "$name$.toWriter(w)\n",
+                     "tag", tag,
+                     "name", name);
+    } else {
       std::string write_func;
       if (field->type() == google::protobuf::FieldDescriptor::TYPE_BOOL) {
         write_func = "writeBool";
@@ -568,24 +605,14 @@ void CodeGenerator::GenMessage_toWriter(
         write_func = "undefined";
       }
 
-      if (field->is_repeated()) {
-        printer->Print("for v in $name$ {\n",
-                       "name", name);
-        printer->Indent();
-        name = "v";
-      }
       printer->Print("w.writeVarInt($tag$)\n"
                      "w.$write_func$($name$)\n",
                      "write_func", write_func,
                      "tag", tag,
                      "name", name);
-      if (field->is_repeated()) {
-        printer->Outdent();
-        printer->Print("}\n");
-      }
     }
 
-    if (field->is_optional()) {
+    if (field->is_repeated() || field->is_optional()) {
       printer->Outdent();
       printer->Print("}\n");
     }
@@ -596,7 +623,7 @@ void CodeGenerator::GenMessage_toWriter(
   }
 
   printer->Outdent();
-  printer->Print("}\n\n");
+  printer->Print("}\n");
 }
 
 void CodeGenerator::GenMessage_sizeInBytes(
@@ -638,7 +665,11 @@ void CodeGenerator::GenMessage_sizeInBytes(
     int tag = WireFormatLite::MakeTag(field->number(), WireFormat::WireTypeForField(field));
     string size_of_tag = std::to_string(sizeOfVarInt(tag));
 
-    if (field->type() == google::protobuf::FieldDescriptor::TYPE_BOOL) {
+    if (field->type() == google::protobuf::FieldDescriptor::TYPE_MESSAGE) {
+      printer->Print("n += $size_of_tag$ + sizeOfVarInt($name$.sizeInBytes) + $name$.sizeInBytes\n",
+                     "name", name, 
+                     "size_of_tag", size_of_tag);
+    } else if (field->type() == google::protobuf::FieldDescriptor::TYPE_BOOL) {
       printer->Print("n += $size_of_tag$ + 1\n",
                      "size_of_tag", size_of_tag);
     } else if (field->type() == google::protobuf::FieldDescriptor::TYPE_INT32) {
@@ -670,7 +701,7 @@ void CodeGenerator::GenMessage_sizeInBytes(
   printer->Print("return n\n");
 
   printer->Outdent();
-  printer->Print("}\n\n");
+  printer->Print("}\n");
 }
 
 void CodeGenerator::GenEnum(

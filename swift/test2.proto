@@ -2,4 +2,10 @@ message TestMessage {
   required int32 integer = 1;
   optional string string = 2;
   repeated string repeatedString = 3;
+
+  message Nested {
+  	required float float = 1;
+  }
+
+  required Nested requiredNested = 4;
 }
