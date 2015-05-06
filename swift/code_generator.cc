@@ -72,7 +72,7 @@ int sizeOfVarInt(long long v) {
   return n;
 }
 
-string SwiftTypeForField(const google::protobuf::FieldDescriptor* field) {
+string SwiftTypeForField(const google::protobuf::FieldDescriptor* field, bool fully_qualified) {
   string type;
   switch (field->type()) {
   case google::protobuf::FieldDescriptor::TYPE_BOOL:
@@ -91,7 +91,10 @@ string SwiftTypeForField(const google::protobuf::FieldDescriptor* field) {
     type = "String"; 
     break;
   case google::protobuf::FieldDescriptor::TYPE_MESSAGE:
-    type = field->message_type()->full_name();
+    type = fully_qualified ? field->message_type()->full_name() : field->message_type()->name();
+    break;
+  case google::protobuf::FieldDescriptor::TYPE_ENUM:
+    type = fully_qualified ? field->enum_type()->full_name() : field->enum_type()->name();
     break;
   default:
     type = "/* unknown */";
@@ -102,7 +105,7 @@ string SwiftTypeForField(const google::protobuf::FieldDescriptor* field) {
   }
   if (field->is_optional()) {
     type = type + "?";
-  } else if (field->type() == google::protobuf::FieldDescriptor::TYPE_MESSAGE) {
+  } else if (field->type() == google::protobuf::FieldDescriptor::TYPE_MESSAGE || field->type() == google::protobuf::FieldDescriptor::TYPE_ENUM) {
     type = type + "!";
   }
   return type;
@@ -112,7 +115,7 @@ string DefaultValueForField(const google::protobuf::FieldDescriptor* field) {
   string default_value = "/* default value unknown */";
   if (field->is_repeated()) {
     default_value = "[]";
-  } else if (field->type() == google::protobuf::FieldDescriptor::TYPE_MESSAGE) {
+  } else if (field->type() == google::protobuf::FieldDescriptor::TYPE_MESSAGE || field->type() == google::protobuf::FieldDescriptor::TYPE_ENUM) {
     default_value = "nil";
   } else {
     switch (field->cpp_type()) {
@@ -201,24 +204,11 @@ bool CodeGenerator::Generate(
   printer.Print("}\n");
   printer.Print("\n");
 
-/*
   for (int i = 0; i < file->enum_type_count(); ++i) {
     CodeGenerator::GenEnum(
         file->enum_type(i),
         &printer);
   }
-
-  for (int i = 0; i < file->message_type_count(); ++i) {
-    const google::protobuf::Descriptor *message = file->message_type(i);
-    printer.Print("exports.$name$ = $name$\n",
-                  "name", message->name());
-  }
-  for (int i = 0; i < file->enum_type_count(); ++i) {
-    const google::protobuf::EnumDescriptor *enum_desc = file->enum_type(i);
-    printer.Print("exports.$name$ = $name$\n",
-                  "name", enum_desc->name());
-  }
-*/
 
   if (printer.failed()) {
     *error = "CodeGenerator detected write error.";
@@ -240,7 +230,7 @@ void CodeGenerator::GenDescriptor(
     const google::protobuf::FieldDescriptor *field = message->field(i);
     printer->Print("public let $name$: $type$\n",
                    "name", field->camelcase_name(),
-                   "type", SwiftTypeForField(field));
+                   "type", SwiftTypeForField(field, false));
   }
   printer->Print("\n");
 
@@ -249,7 +239,7 @@ void CodeGenerator::GenDescriptor(
     const google::protobuf::FieldDescriptor *field = message->field(i);
     printer->Print("$name$: $type$",
                    "name", field->camelcase_name(),
-                   "type", SwiftTypeForField(field));
+                   "type", SwiftTypeForField(field, false));
     if (i != lastI) {
       printer->Print(", ");
     }
@@ -330,7 +320,7 @@ void CodeGenerator::GenMessage_fromReader(
 
     printer->Print("var $name$: $type$ = $default_value$\n",
                    "name", field->camelcase_name(),
-                   "type", SwiftTypeForField(field),
+                   "type", SwiftTypeForField(field, false),
                    "default_value", default_value);
   }
   printer->Print("\n");
@@ -366,6 +356,17 @@ void CodeGenerator::GenMessage_fromReader(
       }
 
       printer->Print("r.popLimit(limit)\n");
+    } else if (field->type() == google::protobuf::FieldDescriptor::TYPE_ENUM) {
+      string type = field->enum_type()->name();
+      if (field->is_repeated()) {
+        printer->Print("$name$.append($type$(rawValue: r.readVarInt()))\n",
+                       "type", type,
+                       "name", name);
+      } else {
+        printer->Print("$name$ = $type$(rawValue: r.readVarInt())\n",
+                       "type", type,
+                       "name", name);
+      }
     } else {
       std::string read_func;
       if (field->type() == google::protobuf::FieldDescriptor::TYPE_BOOL) {
@@ -378,8 +379,6 @@ void CodeGenerator::GenMessage_fromReader(
         read_func = "readFloat64";
       } else if (field->type() == google::protobuf::FieldDescriptor::TYPE_STRING) {
         read_func = "readString";
-      } else if (field->type() == google::protobuf::FieldDescriptor::TYPE_ENUM) {
-        read_func = "readVarInt";
       } else {
         read_func = "undefined";
       }
@@ -468,7 +467,7 @@ void CodeGenerator::GenMessageBuilder(
 
     printer->Print("var $name$: $type$ = $default_value$\n",
                    "name", field->camelcase_name(),
-                   "type", SwiftTypeForField(field),
+                   "type", SwiftTypeForField(field, true),
                    "default_value", default_value);
   }
   printer->Print("\n");
@@ -497,7 +496,7 @@ void CodeGenerator::GenMessageBuilder(
 
     printer->Print("public func set$name$(v: $type$) -> Self {\n",
                    "name", ToCamelCase(field->name(), false),
-                   "type", SwiftTypeForField(field));
+                   "type", SwiftTypeForField(field, true));
     printer->Indent();
     printer->Print("self.$name$ = v\n",
                    "name", field_name);
@@ -587,6 +586,11 @@ void CodeGenerator::GenMessage_toWriter(
                      "$name$.toWriter(w)\n",
                      "tag", tag,
                      "name", name);
+    } else if (field->type() == google::protobuf::FieldDescriptor::TYPE_ENUM) {
+      printer->Print("w.writeVarInt($tag$)\n"
+                     "w.writeVarInt($name$.rawValue)\n",
+                     "tag", tag,
+                     "name", name);
     } else {
       std::string write_func;
       if (field->type() == google::protobuf::FieldDescriptor::TYPE_BOOL) {
@@ -599,8 +603,6 @@ void CodeGenerator::GenMessage_toWriter(
         write_func = "writeFloat64";
       } else if (field->type() == google::protobuf::FieldDescriptor::TYPE_STRING) {
         write_func = "writeString";
-      } else if (field->type() == google::protobuf::FieldDescriptor::TYPE_ENUM) {
-        write_func = "writeVarInt";
       } else {
         write_func = "undefined";
       }
@@ -636,7 +638,7 @@ void CodeGenerator::GenMessage_sizeInBytes(
     const google::protobuf::FieldDescriptor *field = message->field(i);
     printer->Print("$name$: $type$",
                    "name", field->camelcase_name(),
-                   "type", SwiftTypeForField(field));
+                   "type", SwiftTypeForField(field, false));
     if (i != lastI) {
       printer->Print(", ");
     }
@@ -669,6 +671,10 @@ void CodeGenerator::GenMessage_sizeInBytes(
       printer->Print("n += $size_of_tag$ + sizeOfVarInt($name$.sizeInBytes) + $name$.sizeInBytes\n",
                      "name", name, 
                      "size_of_tag", size_of_tag);
+    } else if (field->type() == google::protobuf::FieldDescriptor::TYPE_ENUM) {
+      printer->Print("n += $size_of_tag$ + sizeOfVarInt($name$.rawValue)\n",
+                     "name", name, 
+                     "size_of_tag", size_of_tag);
     } else if (field->type() == google::protobuf::FieldDescriptor::TYPE_BOOL) {
       printer->Print("n += $size_of_tag$ + 1\n",
                      "size_of_tag", size_of_tag);
@@ -694,11 +700,10 @@ void CodeGenerator::GenMessage_sizeInBytes(
       printer->Outdent();
       printer->Print("}\n");
     }
-
-    printer->Print("\n");
   }
 
-  printer->Print("return n\n");
+  printer->Print("\n"
+                 "return n\n");
 
   printer->Outdent();
   printer->Print("}\n");
@@ -708,19 +713,14 @@ void CodeGenerator::GenEnum(
     const google::protobuf::EnumDescriptor *enum_desc,
     google::protobuf::io::Printer *printer) 
 {
-  printer->Print("var $name$ = {\n",
+  printer->Print("public enum $name$: Int {\n",
                  "name", enum_desc->full_name());
   printer->Indent();
   for (int i = 0; i < enum_desc->value_count(); ++i) {
-    std::string format = "$key$: $value$,\n";
-    if (i == enum_desc->value_count() - 1) {
-      format = "$key$: $value$\n";
-    }
-    std::ostringstream number;
-    number << enum_desc->value(i)->number();
-    printer->Print(format.c_str(),
-                   "key", enum_desc->value(i)->name(),
-                   "value", number.str());
+    string number = to_string(enum_desc->value(i)->number());
+    printer->Print("case $key$ = $value$\n",
+                   "key", ToCamelCase(enum_desc->value(i)->name(), false),
+                   "value", number);
   }
   printer->Outdent();
   printer->Print("}\n\n");
