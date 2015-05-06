@@ -100,6 +100,26 @@ string SwiftTypeForField(const google::protobuf::FieldDescriptor* field) {
   return type;
 }
 
+string DefaultValueForField(const google::protobuf::FieldDescriptor* field) {
+  string default_value = "/* default value unknown */";
+  switch (field->cpp_type()) {
+    case internal::WireFormatLite::CPPTYPE_INT32:
+      default_value = field->is_optional() ? "nil" : "0";
+      if (field->has_default_value()) { 
+        default_value = to_string(field->default_value_int32());
+      }
+      break;
+    case internal::WireFormatLite::CPPTYPE_STRING:
+      default_value = field->is_optional() ? "nil" : "\"\"";
+      if (field->has_default_value()) { 
+        default_value = field->default_value_string();
+      }
+    default: 
+      break;
+  }
+  return default_value;
+}
+
 } // namespace
 
 CodeGenerator::CodeGenerator(const std::string &name)
@@ -138,35 +158,41 @@ bool CodeGenerator::Generate(
         &printer);
   }
 
+// private func sizeOfString(s: String) -> Int {
+//     let b = countElements(s.utf8)
+//     return sizeOfVarInt(b) + b
+// }
+
+
+  printer.Print("private func sizeOfVarInt(v: Int) -> Int {\n");
+  printer.Indent();
+  printer.Print("var n = 0\n");
+  printer.Print("var x = v\n");
+  printer.Print("do {\n");
+  printer.Indent();
+  printer.Print("x = x >> 7\n");
+  printer.Print("n++\n");
+  printer.Outdent();
+  printer.Print("} while (x > 0)\n");
+  printer.Print("return n\n");
+  printer.Outdent();
+  printer.Print("}\n");
+  printer.Print("\n");
+
+  printer.Print("private func sizeOfString(s: String) -> Int {\n");
+  printer.Indent();
+  printer.Print("let b = countElements(s.utf8)\n");
+  printer.Print("return sizeOfVarInt(b) + b\n");
+  printer.Outdent();
+  printer.Print("}\n");
+  printer.Print("\n");
+
 /*
   for (int i = 0; i < file->enum_type_count(); ++i) {
     CodeGenerator::GenEnum(
         file->enum_type(i),
         &printer);
   }
-
-  printer.Print("function sizeOfVarInt(v) {\n");
-  printer.Indent();
-  printer.Print("var n = 0\n");
-  printer.Print("do {\n");
-  printer.Indent();
-  printer.Print("v >>= 7\n");
-  printer.Print("n++\n");
-  printer.Outdent();
-  printer.Print("} while (v > 0)\n");
-  printer.Print("return n\n");
-  printer.Outdent();
-  printer.Print("}\n");
-  printer.Print("\n");
-
-  printer.Print("function sizeOfString(s) {\n");
-  printer.Indent();
-  printer.Print("var b = 0, i = 0, c\n");
-  printer.Print("while(c=s.charCodeAt(i++)){b+=c>>11?3:c>>7?2:1}\n");
-  printer.Print("return sizeOfVarInt(b) + b\n");
-  printer.Outdent();
-  printer.Print("}\n");
-  printer.Print("\n");
 
   for (int i = 0; i < file->message_type_count(); ++i) {
     const google::protobuf::Descriptor *message = file->message_type(i);
@@ -228,21 +254,14 @@ void CodeGenerator::GenDescriptor(
   CodeGenerator::GenMessage_toWriter(message, printer);
   CodeGenerator::GenMessage_fromReader(message, printer);
   CodeGenerator::GenMessage_sizeInBytes(message, printer);
-
-  printer->Outdent();
-  printer->Print("}\n");
-
-/*
-  CodeGenerator::GenMessage_fromReader(message, printer);
   CodeGenerator::GenMessage_builder(message, printer);
-  CodeGenerator::GenMessage_sizeInBytes(message, printer);
 
   printer->Outdent();
-  printer->Print("}\n");
+  printer->Print("}\n\n");
 
   CodeGenerator::GenMessageBuilder(message, printer);
 
-  for (int i = 0; i < message->nested_type_count(); ++i) {
+/*  for (int i = 0; i < message->nested_type_count(); ++i) {
     const google::protobuf::Descriptor *nested_type = message->nested_type(i);
     printer->Print("$name$.$nested_name$ = function(){\n",
                    "name", message->name(),
@@ -351,7 +370,6 @@ void CodeGenerator::GenMessage_fromReader(
                      "name", field->camelcase_name());
     }
 
-
     printer->Outdent();
   }
   printer->Print("default:\n");
@@ -381,8 +399,6 @@ void CodeGenerator::GenMessage_fromReader(
   }
   printer->Print(")\n");
 
-  //return TestMessage(sizeInBytes: sizeInBytes, integer: integer, string: string)
-
   printer->Print("return $name$(sizeInBytes: sizeInBytes, ",
                   "name", message->name());
   for (int i = 0, lastI = message->field_count() - 1; i <= lastI; ++i) {
@@ -399,88 +415,135 @@ void CodeGenerator::GenMessage_fromReader(
   printer->Print("}\n\n");
 }
 
-// void CodeGenerator::GenMessage_builder(
-//     const google::protobuf::Descriptor *message,
-//     google::protobuf::io::Printer *printer) 
-// {
-//   printer->Print("$name$.builder = function() {\n",
-//                  "name", message->name());
-//   printer->Indent();
-//   printer->Print("return new $name$Builder()\n",
-//                  "name", message->name());
-//   printer->Outdent();
-//   printer->Print("}\n");
-// }
+void CodeGenerator::GenMessage_builder(
+    const google::protobuf::Descriptor *message,
+    google::protobuf::io::Printer *printer) 
+{
+  printer->Print("public class func builder() -> $name$Builder {\n",
+                 "name", message->name());
+  printer->Indent();
+  printer->Print("return $name$Builder()\n",
+                 "name", message->name());
+  printer->Outdent();
+  printer->Print("}\n");
+}
 
-// void CodeGenerator::GenMessageBuilder(
-//     const google::protobuf::Descriptor *message,
-//     google::protobuf::io::Printer *printer) 
-// {
-//   std::string builder_name = message->name() + "Builder";
-//   printer->Print("function $builder$() {\n",
-//                  "builder", builder_name);
-//   printer->Indent();
-//   printer->Print("this.m = undefined\n");
-//   printer->Outdent();
-//   printer->Print("}\n");
-//   printer->Print("$builder$.prototype = {\n",
-//                  "builder", builder_name);
-//   printer->Indent();
+void CodeGenerator::GenMessageBuilder(
+    const google::protobuf::Descriptor *message,
+    google::protobuf::io::Printer *printer) 
+{
+  std::string builder_name = message->name() + "Builder";
+  printer->Print("public class $builder$ {\n",
+                 "builder", builder_name);
+  printer->Indent();
+  for (int i = 0; i < message->field_count(); ++i) {
+    const google::protobuf::FieldDescriptor *field = message->field(i);
 
-//   printer->Print("clear: function() {\n");
-//   printer->Indent();
-//   printer->Print("this.m = undefined\n"
-//                  "return this\n");
-//   printer->Outdent();
-//   printer->Print("},\n");
+    string default_value = "/* default value unknown */";
+    switch (field->cpp_type()) {
+      case internal::WireFormatLite::CPPTYPE_INT32:
+        default_value = field->is_optional() ? "nil" : "0";
+        if (field->has_default_value()) { 
+          default_value = to_string(field->default_value_int32());
+        }
+        break;
+      case internal::WireFormatLite::CPPTYPE_STRING:
+        default_value = field->is_optional() ? "nil" : "\"\"";
+        if (field->has_default_value()) { 
+          default_value = field->default_value_string();
+        }
+      default: 
+        break;
+    }
 
-//   for (int i = 0; i < message->field_count(); ++i) {
-//     const google::protobuf::FieldDescriptor *field = message->field(i);
+    printer->Print("var $name$: $type$ = $default_value$\n",
+                   "name", field->camelcase_name(),
+                   "type", SwiftTypeForField(field),
+                   "default_value", default_value);
+  }
+  printer->Print("\n");
 
-//     std::string field_name = field->camelcase_name();
+  printer->Print("public func clear() -> Self {\n");
+  printer->Indent();
 
-//     printer->Print("set$name$: function(v) {\n",
-//                    "name", ToCamelCase(field->name(), false));
-//     printer->Indent();
-//     printer->Print("var m = this.m || (this.m = new $name$())\n"
-//                    "m.$field_name$ = v\n"
-//                    "return this\n",
-//                    "name", message->name(),
-//                    "field_name", field_name);
-//     printer->Outdent();
-//     printer->Print("},\n");
+  for (int i = 0; i < message->field_count(); ++i) {
+    const google::protobuf::FieldDescriptor *field = message->field(i);
+
+    string default_value = DefaultValueForField(field);
+
+    printer->Print("self.$name$ = $default_value$\n",
+                   "name", field->camelcase_name(),
+                   "default_value", default_value);
+  }
+  printer->Print("return self\n");
+
+  printer->Outdent();
+  printer->Print("}\n\n");
+
+  for (int i = 0; i < message->field_count(); ++i) {
+    const google::protobuf::FieldDescriptor *field = message->field(i);
+
+    std::string field_name = field->camelcase_name();
+
+    printer->Print("public func set$name$(v: $type$) -> Self {\n",
+                   "name", ToCamelCase(field->name(), false),
+                   "type", SwiftTypeForField(field));
+    printer->Indent();
+    printer->Print("self.$name$ = v\n",
+                   "name", field_name);
+    printer->Print("return self\n");
+    printer->Outdent();
+    printer->Print("}\n\n");
 
 
-//     printer->Print("clear$name$: function() {\n",
-//                    "name", ToCamelCase(field->name(), false));
-//     printer->Indent();
-//     printer->Print("var m = this.m\n"
-//                    "if (m) {\n");
-//     printer->Indent();
-//     printer->Print("m.$field_name$ = undefined\n",
-//                    "field_name", field_name);
-//     printer->Outdent();
-//     printer->Print("}\n"
-//                    "return this\n");
-//     printer->Outdent();
-//     printer->Print("},\n");
-//   }
+    printer->Print("public func clear$name$() -> Self {\n",
+                   "name", ToCamelCase(field->name(), false));
+    printer->Indent();
+    printer->Print("self.$name$ = $default_value$\n",
+                   "name", field_name,
+                   "default_value", DefaultValueForField(field));
+    printer->Print("return self\n");
+    printer->Outdent();
+    printer->Print("}\n\n");
+  }
 
-//   printer->Print("build: function() {\n");
-//   printer->Indent();
-//   printer->Print("var m = this.m || new $name$()\n",
-//                  "name", message->name());
-//   printer->Print("m.sizeInBytes = sizeInBytesOf$type$(m)\n"
-//                  "m = Object.freeze(m)\n"
-//                  "this.m = undefined\n"
-//                  "return m\n",
-//                  "type", message->name());
-//   printer->Outdent();
-//   printer->Print("},\n");
+  printer->Print("public func build() -> TestMessage {\n");
+  printer->Indent();
 
-//   printer->Outdent();
-//   printer->Print("}\n");
-// }
+  printer->Print("let sizeInBytes = $name$.sizeInBytes(",
+                  "name", message->name());
+  for (int i = 0, lastI = message->field_count() - 1; i <= lastI; ++i) {
+    const google::protobuf::FieldDescriptor *field = message->field(i);
+    if(i == 0){
+      printer->Print("$name$",
+                   "name", field->camelcase_name());
+    } else {
+      printer->Print("$name$: $name$",
+                     "name", field->camelcase_name());
+    }
+    if (i != lastI) {
+      printer->Print(", ");
+    }
+  }
+  printer->Print(")\n");
+  printer->Print("return $name$(sizeInBytes: sizeInBytes, ",
+                  "name", message->name());
+  for (int i = 0, lastI = message->field_count() - 1; i <= lastI; ++i) {
+    const google::protobuf::FieldDescriptor *field = message->field(i);
+    printer->Print("$name$: $name$",
+                   "name", field->camelcase_name());
+    if (i != lastI) {
+      printer->Print(", ");
+    }
+  }
+  printer->Print(")\n");
+
+  printer->Outdent();
+  printer->Print("}\n");
+
+  printer->Outdent();
+  printer->Print("}\n");
+}
 
 void CodeGenerator::GenMessage_toWriter(
     const google::protobuf::Descriptor *message,
@@ -607,58 +670,8 @@ void CodeGenerator::GenMessage_sizeInBytes(
 
   printer->Print("return n\n");
 
-  //   int tag = WireFormatLite::MakeTag(field->number(), WireFormat::WireTypeForField(field));
-  //   std::string field_name = field->camelcase_name();
-
-  //   if (field->label() == google::protobuf::FieldDescriptor::LABEL_REPEATED) {
-  //     printer->Print("var a = m.$name$\n"
-  //                    "for (var i = 0, iMax = a.length; i < iMax; i++) {\n",
-  //                    "name", field_name);
-  //     printer->Indent();
-  //     printer->Print("var v = a[i]\n");
-  //   } else {
-  //     printer->Print("var v = m.$name$\n",
-  //                    "name", field_name);
-  //   }
-
-  //   if (field->type() == google::protobuf::FieldDescriptor::TYPE_MESSAGE) {
-  //     printer->Print("n += $size_of_tag$ + sizeOfVarInt(v.sizeInBytes) + v.sizeInBytes\n",
-  //                    "size_of_tag", std::to_string(sizeOfVarInt(tag)));
-  //   } else if (field->type() == google::protobuf::FieldDescriptor::TYPE_BOOL) {
-  //     printer->Print("n += $size_of_tag$ + 1\n",
-  //                    "size_of_tag", std::to_string(sizeOfVarInt(tag)));
-  //   } else if (field->type() == google::protobuf::FieldDescriptor::TYPE_INT32) {
-  //     printer->Print("n += $size_of_tag$ + sizeOfVarInt(v)\n",
-  //                    "size_of_tag", std::to_string(sizeOfVarInt(tag)));
-  //   } else if (field->type() == google::protobuf::FieldDescriptor::TYPE_FLOAT) {
-  //     printer->Print("n += $size_of_tag$ + 4\n",
-  //                    "size_of_tag", std::to_string(sizeOfVarInt(tag)));
-  //   } else if (field->type() == google::protobuf::FieldDescriptor::TYPE_DOUBLE) {
-  //     printer->Print("n += $size_of_tag$ + 8\n",
-  //                    "size_of_tag", std::to_string(sizeOfVarInt(tag)));
-  //   } else if (field->type() == google::protobuf::FieldDescriptor::TYPE_STRING) {
-  //     printer->Print("n += $size_of_tag$ + sizeOfString(v)\n",
-  //                    "size_of_tag", std::to_string(sizeOfVarInt(tag)));
-  //   } else if (field->type() == google::protobuf::FieldDescriptor::TYPE_ENUM) {
-  //     printer->Print("n += $size_of_tag$ + sizeOfVarInt(v)\n",
-  //                    "size_of_tag", std::to_string(sizeOfVarInt(tag)));
-  //   } else {
-  //     printer->Print("/*undefined*/\n");
-  //   }
-  
-  //   if (field->label() == google::protobuf::FieldDescriptor::LABEL_REPEATED) {
-  //     printer->Outdent();
-  //     printer->Print("}\n");
-  //   }
-    
-  //   printer->Outdent();
-  //   printer->Print("}\n");
-  // }
-
-  // printer->Print("return n\n");
-
   printer->Outdent();
-  printer->Print("}\n");
+  printer->Print("}\n\n");
 }
 
 void CodeGenerator::GenEnum(
