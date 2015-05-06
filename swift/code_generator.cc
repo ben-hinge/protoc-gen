@@ -94,6 +94,9 @@ string SwiftTypeForField(const google::protobuf::FieldDescriptor* field) {
     type = "/* unknown */";
     break;
   }
+  if (field->is_repeated()) {
+    type = "[" + type + "]";
+  }
   if (field->is_optional()) {
     type = type + "?";
   }
@@ -102,20 +105,24 @@ string SwiftTypeForField(const google::protobuf::FieldDescriptor* field) {
 
 string DefaultValueForField(const google::protobuf::FieldDescriptor* field) {
   string default_value = "/* default value unknown */";
-  switch (field->cpp_type()) {
-    case internal::WireFormatLite::CPPTYPE_INT32:
-      default_value = field->is_optional() ? "nil" : "0";
-      if (field->has_default_value()) { 
-        default_value = to_string(field->default_value_int32());
-      }
-      break;
-    case internal::WireFormatLite::CPPTYPE_STRING:
-      default_value = field->is_optional() ? "nil" : "\"\"";
-      if (field->has_default_value()) { 
-        default_value = field->default_value_string();
-      }
-    default: 
-      break;
+  if (field->is_repeated()) {
+    default_value = "[]";
+  } else {
+    switch (field->cpp_type()) {
+      case internal::WireFormatLite::CPPTYPE_INT32:
+        default_value = field->is_optional() ? "nil" : "0";
+        if (field->has_default_value()) { 
+          default_value = to_string(field->default_value_int32());
+        }
+        break;
+      case internal::WireFormatLite::CPPTYPE_STRING:
+        default_value = field->is_optional() ? "nil" : "\"\"";
+        if (field->has_default_value()) { 
+          default_value = field->default_value_string();
+        }
+      default: 
+        break;
+    }
   }
   return default_value;
 }
@@ -311,22 +318,7 @@ void CodeGenerator::GenMessage_fromReader(
   for (int i = 0; i < message->field_count(); ++i) {
     const google::protobuf::FieldDescriptor *field = message->field(i);
 
-    string default_value = "/* default value unknown */";
-    switch (field->cpp_type()) {
-      case internal::WireFormatLite::CPPTYPE_INT32:
-        default_value = field->is_optional() ? "nil" : "0";
-        if (field->has_default_value()) { 
-          default_value = to_string(field->default_value_int32());
-        }
-        break;
-      case internal::WireFormatLite::CPPTYPE_STRING:
-        default_value = field->is_optional() ? "nil" : "\"\"";
-        if (field->has_default_value()) { 
-          default_value = field->default_value_string();
-        }
-      default: 
-        break;
-    }
+    string default_value = DefaultValueForField(field);
 
     printer->Print("var $name$: $type$ = $default_value$\n",
                    "name", field->camelcase_name(),
@@ -347,6 +339,8 @@ void CodeGenerator::GenMessage_fromReader(
                    "tag", tag);
     printer->Indent();
 
+    string name = field->camelcase_name();
+
     {
       std::string read_func;
       if (field->type() == google::protobuf::FieldDescriptor::TYPE_BOOL) {
@@ -365,9 +359,15 @@ void CodeGenerator::GenMessage_fromReader(
         read_func = "undefined";
       }
 
-      printer->Print("$name$ = r.$read_func$()\n",
-                     "read_func",read_func,
-                     "name", field->camelcase_name());
+      if (field->is_repeated()) {
+        printer->Print("$name$.append(r.$read_func$())\n",
+                       "read_func",read_func,
+                       "name", name);
+      } else {
+        printer->Print("$name$ = r.$read_func$()\n",
+                       "read_func",read_func,
+                       "name", name);
+      }
     }
 
     printer->Outdent();
@@ -439,22 +439,7 @@ void CodeGenerator::GenMessageBuilder(
   for (int i = 0; i < message->field_count(); ++i) {
     const google::protobuf::FieldDescriptor *field = message->field(i);
 
-    string default_value = "/* default value unknown */";
-    switch (field->cpp_type()) {
-      case internal::WireFormatLite::CPPTYPE_INT32:
-        default_value = field->is_optional() ? "nil" : "0";
-        if (field->has_default_value()) { 
-          default_value = to_string(field->default_value_int32());
-        }
-        break;
-      case internal::WireFormatLite::CPPTYPE_STRING:
-        default_value = field->is_optional() ? "nil" : "\"\"";
-        if (field->has_default_value()) { 
-          default_value = field->default_value_string();
-        }
-      default: 
-        break;
-    }
+    string default_value = DefaultValueForField(field);
 
     printer->Print("var $name$: $type$ = $default_value$\n",
                    "name", field->camelcase_name(),
@@ -583,11 +568,21 @@ void CodeGenerator::GenMessage_toWriter(
         write_func = "undefined";
       }
 
+      if (field->is_repeated()) {
+        printer->Print("for v in $name$ {\n",
+                       "name", name);
+        printer->Indent();
+        name = "v";
+      }
       printer->Print("w.writeVarInt($tag$)\n"
                      "w.$write_func$($name$)\n",
                      "write_func", write_func,
                      "tag", tag,
                      "name", name);
+      if (field->is_repeated()) {
+        printer->Outdent();
+        printer->Print("}\n");
+      }
     }
 
     if (field->is_optional()) {
@@ -633,12 +628,16 @@ void CodeGenerator::GenMessage_sizeInBytes(
                      "name", name);
       printer->Indent();
       name = "v";
+    } else if (field->is_repeated()) {
+      printer->Print("for v in $name$ {\n",
+                     "name", name);
+      printer->Indent();
+      name = "v";
     }
 
     int tag = WireFormatLite::MakeTag(field->number(), WireFormat::WireTypeForField(field));
     string size_of_tag = std::to_string(sizeOfVarInt(tag));
 
-    std::string write_func;
     if (field->type() == google::protobuf::FieldDescriptor::TYPE_BOOL) {
       printer->Print("n += $size_of_tag$ + 1\n",
                      "size_of_tag", size_of_tag);
@@ -660,7 +659,7 @@ void CodeGenerator::GenMessage_sizeInBytes(
       // TODO: Other types
     }
 
-    if (field->is_optional()) {
+    if (field->is_optional() || field->is_repeated()) {
       printer->Outdent();
       printer->Print("}\n");
     }
