@@ -621,10 +621,31 @@ void CodeGenerator::GenMessage_toWriter(
   printer->Print("public func toWriter(w: Writer) {\n");
   printer->Indent();
 
+
+  printer->Print("var tagMap: [Int:String] = [ \n");
+  printer->Indent();
+    
+  for (int i = 0; i < message->field_count(); ++i) {
+    const google::protobuf::FieldDescriptor *field = message->field(i);
+
+    string name = field->camelcase_name();
+    string tag = to_string(WireFormatLite::MakeTag(field->number(), WireFormat::WireTypeForField(field)));
+
+    printer->Print("$tag$ : \"$name$\"",
+                    "tag", tag,
+                    "name", name);
+
+    i != message->field_count() - 1 ? printer->Print(",\n") : printer->Print("\n");
+  }
+
+  printer->Outdent();
+  printer->Print("]\n\n");
+
+  printer->Print("w.pushTagMap(tagMap)\n\n");
+
   for (int i = 0; i < message->field_count(); ++i) {
     const google::protobuf::FieldDescriptor *field = message->field(i);
     string name = "self." + field->camelcase_name();
-
     string tag = to_string(WireFormatLite::MakeTag(field->number(), WireFormat::WireTypeForField(field)));
 
     if (field->is_optional()) {
@@ -684,6 +705,9 @@ void CodeGenerator::GenMessage_toWriter(
       printer->Print("\n");
     }
   }
+
+  printer->Print("\n");
+  printer->Print("w.popTagMap()\n");
 
   printer->Outdent();
   printer->Print("}\n");
