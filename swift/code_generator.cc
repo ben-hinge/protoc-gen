@@ -375,6 +375,28 @@ void CodeGenerator::GenMessage_fromReader(
   printer->Print("public class func fromReader(r: Reader) -> $name$ {\n",
                  "name", message->name());
   printer->Indent();
+
+  printer->Print("var tagMap: [String:Int] = [ \n");
+  printer->Indent();
+    
+  for (int i = 0; i < message->field_count(); ++i) {
+    const google::protobuf::FieldDescriptor *field = message->field(i);
+
+    string name = field->camelcase_name();
+    string tag = to_string(WireFormatLite::MakeTag(field->number(), WireFormat::WireTypeForField(field)));
+
+    printer->Print("\"$name$\" : $tag$",
+                    "name", name,
+                    "tag", tag);
+
+    i != message->field_count() - 1 ? printer->Print(",\n") : printer->Print("\n");
+  }
+
+  printer->Outdent();
+  printer->Print("]\n\n");
+
+  printer->Print("r.pushTagMap(tagMap)\n\n");
+
   for (int i = 0; i < message->field_count(); ++i) {
     const google::protobuf::FieldDescriptor *field = message->field(i);
 
@@ -466,7 +488,9 @@ void CodeGenerator::GenMessage_fromReader(
   //
   printer->Print("}\n");
   printer->Outdent();
-  printer->Print("}\n");
+  printer->Print("}\n\n");
+
+  printer->Print("r.popTagMap()\n");
 
   printer->Print("\n");
   printer->Print("let sizeInBytes = $name$.sizeOf(",
