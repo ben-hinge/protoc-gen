@@ -4,4 +4,10 @@ message DemoMessage {
 	optional int64 demoInt64 = 3;
 	optional bool demoBool = 4;
 	optional string	demoString = 5;
+	optional NestedMessage nestedMessage = 6;
+
+	message NestedMessage {
+		optional string nestedString = 1;
+		optional int32 nestedInt32 = 2;
+	}
 }
