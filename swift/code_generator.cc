@@ -411,7 +411,7 @@ void CodeGenerator::GenMessage_fromReader(
 
   printer->Print("loop: while true {\n");
   printer->Indent();
-  printer->Print("switch r.readVarInt() {\n");
+  printer->Print("switch r.readTag() {\n");
   for (int i = 0; i < message->field_count(); ++i) {
     const google::protobuf::FieldDescriptor *field = message->field(i);
 
@@ -685,13 +685,13 @@ void CodeGenerator::GenMessage_toWriter(
     }
     
     if (field->type() == google::protobuf::FieldDescriptor::TYPE_MESSAGE) {
-      printer->Print("w.writeVarInt($tag$)\n"
+      printer->Print("w.writeTag($tag$)\n"
                      "w.writeVarInt($name$.sizeInBytes)\n"
                      "$name$.toWriter(w)\n",
                      "tag", tag,
                      "name", name);
     } else if (field->type() == google::protobuf::FieldDescriptor::TYPE_ENUM) {
-      printer->Print("w.writeVarInt($tag$)\n"
+      printer->Print("w.writeTag($tag$)\n"
                      "w.writeVarInt($name$.rawValue)\n",
                      "tag", tag,
                      "name", name);
@@ -713,7 +713,7 @@ void CodeGenerator::GenMessage_toWriter(
         write_func = "undefined";
       }
 
-      printer->Print("w.writeVarInt($tag$)\n"
+      printer->Print("w.writeTag($tag$)\n"
                      "w.$write_func$($name$)\n",
                      "write_func", write_func,
                      "tag", tag,
