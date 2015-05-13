@@ -5,6 +5,7 @@ message DemoMessage {
 	optional bool demoBool = 4;
 	optional string	demoString = 5;
 	optional NestedMessage nestedMessage = 6;
+	repeated string demoRepeated = 7;
 
 	message NestedMessage {
 		optional string nestedString = 1;

@@ -646,7 +646,7 @@ void CodeGenerator::GenMessage_toWriter(
   printer->Indent();
 
 
-  printer->Print("var tagMap: [Int:String] = [ \n");
+  printer->Print("var tagMap: [Int:(String, Bool)] = [ \n");
   printer->Indent();
     
   for (int i = 0; i < message->field_count(); ++i) {
@@ -654,10 +654,16 @@ void CodeGenerator::GenMessage_toWriter(
 
     string name = field->camelcase_name();
     string tag = to_string(WireFormatLite::MakeTag(field->number(), WireFormat::WireTypeForField(field)));
+    string isRepeated = "false";
+    
+    if (field->is_repeated()) {
+      isRepeated = "true";
+    }
 
-    printer->Print("$tag$ : \"$name$\"",
+    printer->Print("$tag$ : (\"$name$\", $repeated$)",
                     "tag", tag,
-                    "name", name);
+                    "name", name,
+                    "repeated", isRepeated);
 
     i != message->field_count() - 1 ? printer->Print(",\n") : printer->Print("\n");
   }
