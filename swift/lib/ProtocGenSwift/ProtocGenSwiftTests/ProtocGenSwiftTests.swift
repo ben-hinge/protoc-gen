@@ -4,11 +4,11 @@ import ProtocGenSwift
 
 class ProtocGenSwiftTests: XCTestCase {
     
-    var nestedMessage: DemoMessage.NestedMessage!
+    var demoNestedMessage: DemoMessage.DemoNestedMessage!
     var demoMessage: DemoMessage!
     
     override func setUp() {
-        nestedMessage = DemoMessage.NestedMessage.builder()
+        demoNestedMessage = DemoMessage.DemoNestedMessage.builder()
             .setNestedString("nested string")
             .setNestedInt32(42)
             .build()
@@ -19,8 +19,9 @@ class ProtocGenSwiftTests: XCTestCase {
             .setDemoInt64(123)
             .setDemoBool(true)
             .setDemoString("demo string")
-            .setNestedMessage(nestedMessage)
+            .setDemoNestedMessage(demoNestedMessage)
             .setDemoRepeated(["Hello", "World", "Foo", "Bar"])
+            .setDemoRepeatedNestedMessage([demoNestedMessage, demoNestedMessage])
             .build()
     }
     
@@ -34,7 +35,7 @@ class ProtocGenSwiftTests: XCTestCase {
         let reader = JSONReader.fromBuffer(buffer)!
         let readDemoMessage = DemoMessage.fromReader(reader)
         assert(demoMessage == readDemoMessage, "read object to match written object")
-        assert(demoMessage.nestedMessage == readDemoMessage.nestedMessage, "read nested object to match written nested object")
+        assert(demoMessage.demoNestedMessage == readDemoMessage.demoNestedMessage, "read nested object to match written nested object")
         assert(demoMessage.demoDouble == readDemoMessage.demoDouble, "written value for message double should match read double value")
         assert(demoMessage.demoInt32 == readDemoMessage.demoInt32, "written value for message int32 should match read int32 value")
         assert(demoMessage.demoInt64 == readDemoMessage.demoInt64, "written value for message int64 should match read int64 value")
@@ -51,7 +52,7 @@ class ProtocGenSwiftTests: XCTestCase {
         let reader = ProtobufReader.fromBuffer(buffer)!
         let readDemoMessage = DemoMessage.fromReader(reader)
         assert(demoMessage == readDemoMessage, "read object to match written object")
-        assert(demoMessage.nestedMessage == readDemoMessage.nestedMessage, "read nested object to match written nested object")
+        assert(demoMessage.demoNestedMessage == readDemoMessage.demoNestedMessage, "read nested object to match written nested object")
         assert(demoMessage.demoDouble == readDemoMessage.demoDouble, "written value for message double should match read double value")
         assert(demoMessage.demoInt32 == readDemoMessage.demoInt32, "written value for message int32 should match read int32 value")
         assert(demoMessage.demoInt64 == readDemoMessage.demoInt64, "written value for message int64 should match read int64 value")
