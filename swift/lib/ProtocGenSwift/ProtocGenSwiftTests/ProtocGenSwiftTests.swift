@@ -33,13 +33,15 @@ class ProtocGenSwiftTests: XCTestCase {
         
         let reader = JSONReader.fromBuffer(buffer)!
         let readDemoMessage = DemoMessage.fromReader(reader)
+        assert(demoMessage == readDemoMessage, "read object to match written object")
+        assert(demoMessage.nestedMessage == readDemoMessage.nestedMessage, "read nested object to match written nested object")
         assert(demoMessage.demoDouble == readDemoMessage.demoDouble, "written value for message double should match read double value")
         assert(demoMessage.demoInt32 == readDemoMessage.demoInt32, "written value for message int32 should match read int32 value")
         assert(demoMessage.demoInt64 == readDemoMessage.demoInt64, "written value for message int64 should match read int64 value")
         assert(demoMessage.demoBool == readDemoMessage.demoBool, "written value for message bool should match read bool value")
         assert(demoMessage.demoString == readDemoMessage.demoString, "written value for message string should match read string value")
         assert(demoMessage.demoRepeated == readDemoMessage.demoRepeated, "written value for repeated value should match read repeated value")
-        // assert(t == t2, "read object to match written object") // TO DO: Add Swift Equality
+        
     }
     
     func testProtobuf() {
@@ -48,12 +50,14 @@ class ProtocGenSwiftTests: XCTestCase {
         let buffer = writer.toBuffer()
         let reader = ProtobufReader.fromBuffer(buffer)!
         let readDemoMessage = DemoMessage.fromReader(reader)
+        assert(demoMessage == readDemoMessage, "read object to match written object")
+        assert(demoMessage.nestedMessage == readDemoMessage.nestedMessage, "read nested object to match written nested object")
         assert(demoMessage.demoDouble == readDemoMessage.demoDouble, "written value for message double should match read double value")
         assert(demoMessage.demoInt32 == readDemoMessage.demoInt32, "written value for message int32 should match read int32 value")
         assert(demoMessage.demoInt64 == readDemoMessage.demoInt64, "written value for message int64 should match read int64 value")
         assert(demoMessage.demoBool == readDemoMessage.demoBool, "written value for message bool should match read bool value")
         assert(demoMessage.demoString == readDemoMessage.demoString, "written value for message string should match read string value")
         assert(demoMessage.demoRepeated == readDemoMessage.demoRepeated, "written value for repeated value should match read repeated value")
-        // assert(t == t2, "read object to match written object") // TO DO: Add Swift Equality
+        
     }
 }
