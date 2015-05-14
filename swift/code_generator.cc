@@ -255,6 +255,12 @@ bool CodeGenerator::Generate(
       " */\n", "file_name", file_name);
 
   for (int i = 0; i < file->message_type_count(); ++i) {
+  	CodeGenerator::GenMessage_equality(
+  		file->message_type(i), 
+  		&printer);
+ 	}
+
+  for (int i = 0; i < file->message_type_count(); ++i) {
     CodeGenerator::GenDescriptor(
         file->message_type(i),
         &printer);
@@ -301,7 +307,7 @@ void CodeGenerator::GenDescriptor(
     const google::protobuf::Descriptor *message,
     google::protobuf::io::Printer *printer) 
 {
-  printer->Print("public class $name$ {\n",
+  printer->Print("public class $name$: Equatable {\n",
                  "name", message->name());
   printer->Indent();
   printer->Print("public let sizeInBytes: Int\n");
@@ -366,6 +372,40 @@ void CodeGenerator::GenDescriptor(
   CodeGenerator::GenMessageBuilder(message, printer);
 
   printer->Print("\n");
+}
+
+void CodeGenerator::GenMessage_equality(
+    const google::protobuf::Descriptor *message,
+    google::protobuf::io::Printer *printer) 
+{
+
+	printer->Print("\n");
+	printer->Print("public func ==(a: $name$, b: $name$) -> Bool {\n",
+				   "name", message->full_name());
+	printer->Indent();
+	printer->Print("return (\n");
+	printer->Indent();
+	printer->Indent();
+	printer->Print(" a.sizeInBytes == b.sizeInBytes\n");
+	printer->Outdent();
+	for (int i = 0; i < message->field_count(); ++i) {
+    const google::protobuf::FieldDescriptor *field = message->field(i);
+    printer->Print("&& a.$name$ == b.$name$\n",
+    	"name", field->camelcase_name());
+	}
+	printer->Outdent();
+	printer->Print(")\n");
+	printer->Outdent();
+	printer->Print("}\n");
+
+	for (int i = 0; i < message->nested_type_count(); ++i) {
+    const google::protobuf::Descriptor *nested_type = message->nested_type(i);
+    CodeGenerator::GenMessage_equality(
+        nested_type,
+        printer);
+    printer->Print("\n");
+  }
+
 }
 
 void CodeGenerator::GenMessage_fromReader(
