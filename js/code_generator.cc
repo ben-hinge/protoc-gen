@@ -82,7 +82,7 @@ CodeGenerator::CodeGenerator(const std::string &name)
 
 CodeGenerator::~CodeGenerator() {}
 
-  bool CodeGenerator::Generate(
+bool CodeGenerator::Generate(
     const google::protobuf::FileDescriptor *file,
     const std::string &/* parameter */,
     google::protobuf::compiler::OutputDirectory *output_directory,

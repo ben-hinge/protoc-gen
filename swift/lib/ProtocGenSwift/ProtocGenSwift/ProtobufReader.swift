@@ -1,0 +1,122 @@
+import Foundation
+
+public class ProtobufReader : Reader {
+    var limit: Int
+    var offset: Int
+    let buffer: UnsafePointer<UInt8>
+    var data: NSData?
+    
+    init(buffer: UnsafePointer<UInt8>, offset: Int, limit: Int) {
+        self.buffer = buffer
+        self.offset = offset
+        self.limit = limit
+    }
+    
+    convenience init(data: NSData) {
+        self.init(buffer: UnsafePointer<UInt8>(data.bytes), offset: 0, limit: data.length)
+        self.data = data
+    }
+    
+    public class func fromBuffer(data: NSData) -> Reader? {
+        return ProtobufReader(data: data)
+    }
+    
+    public func readTag() -> Int {
+        return Int(readVarUInt())
+    }
+    
+    public func readByte() -> UInt8 {
+        if offset == limit {
+            return 0
+        }
+        return buffer[offset++]
+    }
+    
+    public func readVarInt() -> Int {
+        return Int(readVarUInt())
+    }
+    
+    public func readVarUInt() -> UInt {
+        var v: UInt = 0
+        var s: UInt = 0
+        while true {
+            var b = readByte()
+            v |= (UInt(b & 0x7F) << s)
+            s += 7
+            if 0 == (b & 0x80) {
+                break
+            }
+        }
+        return v
+    }
+    
+    public func readBool() -> Bool {
+        return readVarInt() != 0
+    }
+    
+    public func readUInt32() -> UInt32 {
+        var v = UInt32(readByte())
+        v |= UInt32(readByte()) << 0x08
+        v |= UInt32(readByte()) << 0x10
+        v |= UInt32(readByte()) << 0x18
+        return v
+    }
+    
+    public func readUInt64() -> UInt64 {
+        var v = UInt64(readByte())
+        v |= UInt64(readByte()) << 0x08
+        v |= UInt64(readByte()) << 0x10
+        v |= UInt64(readByte()) << 0x18
+        v |= UInt64(readByte()) << 0x20
+        v |= UInt64(readByte()) << 0x28
+        v |= UInt64(readByte()) << 0x30
+        v |= UInt64(readByte()) << 0x38
+        return v
+    }
+    
+    public func readFloat32() -> Float32 {
+        return Float32._fromBitPattern(readUInt32())
+    }
+    
+    public func readFloat64() -> Float64 {
+        return Float64._fromBitPattern(readUInt64())
+    }
+    
+    public func readString() -> String {
+        var s = ""
+        var l = readVarInt()
+        while (l > 0) {
+            var c = UInt32(readByte())
+            var v = c >> 4
+            if (v > 13) {
+                c = (((c & 0x0F) << 12) | ((UInt32(readByte()) & 0x3F) << 6) | (UInt32(readByte()) & 0x3F))
+                l -= 3
+            } else if (v > 8) {
+                c = (((c & 0x1F) << 6) | (UInt32(readByte()) & 0x3F))
+                l -= 2
+            } else {
+                l -= 1
+            }
+            s = s + String(UnicodeScalar(c))
+        }
+        return s
+    }
+    
+    public func pushLimit(limit: Int) -> Int {
+        var oldLimit = self.limit
+        self.limit = self.offset + limit
+        return oldLimit
+    }
+    
+    public func popLimit(limit: Int) {
+        self.limit = limit
+    }
+    
+    public func pushTagMap(map: [String:(Int, Bool)]) {
+        // NO OP
+    }
+    
+    public func popTagMap() {
+        // NO OP
+    }
+}

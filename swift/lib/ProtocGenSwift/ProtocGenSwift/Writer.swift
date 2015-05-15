@@ -1,0 +1,16 @@
+import Foundation
+
+public protocol Writer {
+    class func withCapacity(capacity: Int) -> Writer?
+    func toBuffer() -> NSData
+    func writeTag(tag: Int)
+    func writeByte(v: UInt8)
+    func writeVarInt(v: Int)
+    func writeVarUInt(v: UInt)
+    func writeBool(v: Bool)
+    func writeFloat32(v: Float32)
+    func writeFloat64(v: Float64)
+    func writeString(v: String)
+    func pushTagMap(map: [Int:(String, Bool)])
+    func popTagMap()
+}
