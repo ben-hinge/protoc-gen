@@ -5,9 +5,7 @@ public class JSONWriter : Writer {
     var tagMap: [Int:(String, Bool)]! = nil
     var objectStack: [NSMutableDictionary] = []
     var object: NSMutableDictionary! = nil
-    var key: String! = nil
-    var wireType: UInt8! = 0
-    var isRepeated: Bool = false
+    var tag: Int! = nil
     var isRepeatedStack: [Bool] = []
     
     public class func withCapacity(capacity: Int) -> Writer? {
@@ -19,13 +17,7 @@ public class JSONWriter : Writer {
     }
     
     public func writeTag(tag: Int) {
-        if let info = tagMap[tag] {
-            wireType = UInt8(tag & 0x07)
-            key = info.0
-            isRepeated = info.1
-        } else {
-            // error
-        }
+        self.tag = tag
     }
     
     public func writeByte(v: UInt8) {
@@ -33,7 +25,7 @@ public class JSONWriter : Writer {
     }
     
     public func writeVarInt(v: Int) {
-        if 0 == wireType & 0x02 {
+        if 0 == tag & 0x02 {
             self.writeValue(v)
         }
     }
@@ -59,40 +51,37 @@ public class JSONWriter : Writer {
     }
     
     private func writeValue(v: AnyObject) {
-        if isRepeated {
-            if let array = object[key] as? NSMutableArray {
-                array.addObject(v)
+        self.writeValue(v, object: object)
+    }
+    
+    private func writeValue(v: AnyObject, object: NSMutableDictionary) {
+        if let info = tagMap[tag] {
+            if info.1 {
+                if let array = object[info.0] as? NSMutableArray {
+                    array.addObject(v)
+                } else {
+                    object[info.0] = NSMutableArray(objects: v)
+                }
             } else {
-                object[key] = NSMutableArray(objects: v)
+                object[info.0] = v
             }
         } else {
-            object[key] = v
+            // error
         }
     }
     
     public func pushTagMap(map: [Int:(String, Bool)]) {
         let parentObject = object
-        let parentIsRepeated = isRepeated
+        object = [:]
+        if tag != nil {
+            self.writeValue(object, object: parentObject)
+        }
+        
         if nil != tagMap {
             tagMapStack.append(tagMap)
-            objectStack.append(object)
-            isRepeatedStack.append(isRepeated)
+            objectStack.append(parentObject)
         }
         tagMap = map
-        object = [:]
-        isRepeated = false
-        if key != nil {
-            if parentIsRepeated {
-                if let array = parentObject[key] as? NSMutableArray {
-                    array.addObject(object)
-                } else {
-                    parentObject[key] = NSMutableArray(objects: object)
-                }
-            } else {
-                parentObject[key] = object
-            }
-            key = nil
-        }
     }
     
     public func popTagMap() {

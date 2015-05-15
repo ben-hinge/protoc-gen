@@ -1,12 +1,15 @@
 import Foundation
 
 public class JSONReader : Reader {
+    typealias RepeatedObject = (key: Int, generator: NSArray.Generator)
+    
     var generatorStack: [NSDictionary.Generator] = []
     var generator: NSDictionary.Generator
     var tagMapStack: [[String:(Int, Bool)]] = []
     var tagMap: [String:(Int, Bool)]! = nil
     var object: AnyObject! = nil
-    var repeatedObject: (key: Int, generator: NSArray.Generator)? = nil
+    var repeatedObjectStack: [RepeatedObject?] = []
+    var repeatedObject: RepeatedObject? = nil
     
     init(dictionary: NSDictionary) {
         self.generator = dictionary.generate()
@@ -21,8 +24,6 @@ public class JSONReader : Reader {
         if let value: AnyObject = repeatedObject?.generator.next() {
             object = value
             return repeatedObject!.key
-        } else {
-            repeatedObject = nil
         }
         
         if let keyValuePair = generator.next() {
@@ -115,6 +116,8 @@ public class JSONReader : Reader {
             tagMapStack.append(self.tagMap)
             generatorStack.append(generator)
             generator = (object as NSDictionary).generate()
+            repeatedObjectStack.append(repeatedObject)
+            repeatedObject = nil
         }
         self.tagMap = map
     }
@@ -123,6 +126,7 @@ public class JSONReader : Reader {
         if tagMapStack.count > 0 {
             tagMap = tagMapStack.removeLast()
             generator = generatorStack.removeLast()
+            repeatedObject = repeatedObjectStack.removeLast()
         }
     }
 }

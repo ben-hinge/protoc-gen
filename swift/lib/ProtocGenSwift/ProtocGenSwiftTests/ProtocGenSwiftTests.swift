@@ -30,7 +30,7 @@ class ProtocGenSwiftTests: XCTestCase {
         demoMessage.toWriter(writer)
         let buffer = writer.toBuffer()
         var jsonString = NSString(data: buffer, encoding: NSUTF8StringEncoding)
-        assert(jsonString == "{\"demoInt32\":42,\"demoRepeated\":[\"Hello\",\"World\",\"Foo\",\"Bar\"],\"demoDouble\":5,\"demoString\":\"demo string\",\"nestedMessage\":{\"nestedString\":\"nested string\",\"nestedInt32\":42},\"demoBool\":true,\"demoInt64\":123}")
+        assert(jsonString == "{\"demoInt32\":42,\"demoNestedMessage\":{\"nestedString\":\"nested string\",\"nestedInt32\":42},\"demoRepeated\":[\"Hello\",\"World\",\"Foo\",\"Bar\"],\"demoDouble\":5,\"demoString\":\"demo string\",\"demoBool\":true,\"demoRepeatedNestedMessage\":[{\"nestedString\":\"nested string\",\"nestedInt32\":42},{\"nestedString\":\"nested string\",\"nestedInt32\":42}],\"demoInt64\":123}")
         
         let reader = JSONReader.fromBuffer(buffer)!
         let readDemoMessage = DemoMessage.fromReader(reader)
@@ -42,7 +42,6 @@ class ProtocGenSwiftTests: XCTestCase {
         assert(demoMessage.demoBool == readDemoMessage.demoBool, "written value for message bool should match read bool value")
         assert(demoMessage.demoString == readDemoMessage.demoString, "written value for message string should match read string value")
         assert(demoMessage.demoRepeated == readDemoMessage.demoRepeated, "written value for repeated value should match read repeated value")
-        
     }
     
     func testProtobuf() {
@@ -59,6 +58,5 @@ class ProtocGenSwiftTests: XCTestCase {
         assert(demoMessage.demoBool == readDemoMessage.demoBool, "written value for message bool should match read bool value")
         assert(demoMessage.demoString == readDemoMessage.demoString, "written value for message string should match read string value")
         assert(demoMessage.demoRepeated == readDemoMessage.demoRepeated, "written value for repeated value should match read repeated value")
-        
     }
 }
