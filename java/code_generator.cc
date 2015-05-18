@@ -239,7 +239,7 @@ bool CodeGenerator::Generate(
   std::string output_file_name = file->name();
   std::size_t loc = output_file_name.rfind(".");
   output_file_name.erase(loc, output_file_name.length() - loc);
-  output_file_name.append(".pb.swift");
+  output_file_name.append(".pb.java");
 
   google::protobuf::internal::scoped_ptr<
       google::protobuf::io::ZeroCopyOutputStream> output(

@@ -1,8 +1,8 @@
 
-SOURCE_FILES := code_generator.cc protoc_gen_swift.cc
+SOURCE_FILES := code_generator.cc protoc_gen_java.cc
 PROTOBUF := /usr/local/opt/protobuf/include
 
-protoc-gen-swift: $(SOURCE_FILES)
+protoc-gen-java: $(SOURCE_FILES)
 	g++ $(SOURCE_FILES) \
 		-I . \
 		-I $(PROTOBUF) \
@@ -16,4 +16,4 @@ protoc-gen-swift: $(SOURCE_FILES)
 
 clean:
 	rm -fr *.pb.*
-	rm -fr protoc-gen-swift
+	rm -fr protoc-gen-java
