@@ -254,6 +254,12 @@ bool CodeGenerator::Generate(
       " * @fileoverview Generated Protocol Buffer code for file $file_name$.\n"
       " */\n", "file_name", file_name);
 
+  printer.Print(
+      "\n"
+      "import java.util.HashMap;\n"
+      " import java.util.Map;\n"
+      "\n");
+
   for (int i = 0; i < file->message_type_count(); ++i) {
   	CodeGenerator::GenMessage_equality(
   		file->message_type(i), 
