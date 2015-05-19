@@ -1,5 +1,7 @@
 package com.tonicdesign.protocgenjava;
 
+import java.util.Map;
+
 public class ReaderProtobuf
 implements
     Reader {
@@ -17,6 +19,10 @@ implements
         mLimit = bytes.length;
     }
 
+    public int readTag() {
+        return (int) readVarInt();
+    }
+
     public byte readByte() {
         if (mOffset == mLimit) {
             return 0;
@@ -25,6 +31,10 @@ implements
     }
 
     public long readVarInt() {
+        return readVarUInt();
+    }
+
+    public long readVarUInt() {
         long v = 0;
         long s = 0;
         while (true) {
@@ -99,5 +109,13 @@ implements
 
     public void popLimit(int limit) {
         mLimit = limit;
+    }
+
+    public void pushTagMap(Map<String, TagMapValue> map) {
+        // Nothing
+    }
+
+    public void popTagMap() {
+        // Nothing
     }
 }

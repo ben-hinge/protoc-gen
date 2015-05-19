@@ -7,6 +7,13 @@ import static org.junit.Assert.assertEquals;
 public class ReaderProtobufTest {
 
     @Test
+    public void testReaderProtobufReadTag() throws Exception {
+        byte testByte = 0x01 << 3 | 0x02;
+        ReaderProtobuf ReaderProtobuf = new ReaderProtobuf(new byte[]{ testByte });
+        assertEquals(testByte, ReaderProtobuf.readTag());
+    }
+
+    @Test
     public void testReaderProtobufReadByte() throws Exception {
         byte testByte = 0x4F;
         ReaderProtobuf ReaderProtobuf = new ReaderProtobuf(new byte[]{ testByte });
@@ -29,6 +36,12 @@ public class ReaderProtobufTest {
     public void testReaderProtobufReadVarInt64Bits() throws Exception {
         ReaderProtobuf ReaderProtobuf = new ReaderProtobuf(new byte[]{(byte) 0x84, (byte) 0x80, (byte) 0x81, (byte) 0x88, (byte) 0x80, (byte) 0x84, (byte) 0x80, (byte) 0x88, (byte) 0x28 });
         assertEquals(2886807498600235012L, ReaderProtobuf.readVarInt());
+    }
+
+    @Test
+    public void testReaderProtobufReadVarUInt64Bits() throws Exception {
+        ReaderProtobuf ReaderProtobuf = new ReaderProtobuf(new byte[]{(byte) 0x84, (byte) 0x80, (byte) 0x81, (byte) 0x88, (byte) 0x80, (byte) 0x84, (byte) 0x80, (byte) 0x88, (byte) 0x28 });
+        assertEquals(2886807498600235012L, ReaderProtobuf.readVarUInt());
     }
 
     @Test
