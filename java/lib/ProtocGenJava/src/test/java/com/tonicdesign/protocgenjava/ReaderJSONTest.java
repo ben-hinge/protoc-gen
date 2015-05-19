@@ -6,6 +6,7 @@ import java.nio.charset.Charset;
 import java.util.HashMap;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 public class ReaderJSONTest {
 
@@ -19,6 +20,22 @@ public class ReaderJSONTest {
     private static final String TEST_TAG_NESTED_JSON_KEY = "testTagNested";
 
     private ReaderJSON mReader;
+
+    @Test
+    public void testInvalidJSON() throws Exception {
+        Reader reader = ReaderJSON.fromBuffer(bytesFromJSON("sdasdasdadsdasd"));
+        assertNull(reader);
+    }
+
+    @Test
+    public void testReadByte() throws Exception {
+        mReader = ReaderJSON.fromBuffer(bytesFromJSON("{\"testTag\": 250}"));
+        mReader.pushTagMap(new HashMap<String, Reader.TagMapValue>() {{
+            put(TEST_TAG_JSON_KEY, new Reader.TagMapValue(TEST_TAG, false));
+        }});
+        assertEquals(TEST_TAG, mReader.readTag());
+        assertEquals((byte) 0xFA, mReader.readByte());
+    }
 
     @Test
     public void testReadVarInt64Bits() throws Exception {
@@ -142,6 +159,18 @@ public class ReaderJSONTest {
         mReader.popTagMap();
         assertEquals(TEST_TAG_2, mReader.readTag());
         assertEquals("hello", mReader.readString());
+    }
+
+    @Test
+    public void testLimit() throws Exception {
+        mReader = ReaderJSON.fromBuffer(bytesFromJSON("{\"testTag\": 12.24}"));
+        mReader.pushTagMap(new HashMap<String, Reader.TagMapValue>() {{
+            put(TEST_TAG_JSON_KEY, new Reader.TagMapValue(TEST_TAG, false));
+        }});
+        int limit = mReader.pushLimit(0);
+        assertEquals(TEST_TAG, mReader.readTag());
+        assertEquals(12.24, mReader.readFloat64(), 0.001);
+        mReader.popLimit(limit);
     }
 
     private byte[] bytesFromJSON(String json) {

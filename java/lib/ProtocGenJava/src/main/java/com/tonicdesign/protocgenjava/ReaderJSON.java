@@ -53,7 +53,7 @@ implements
         try {
             return new ReaderJSON(new JSONObject(json));
         } catch (JSONException e) {
-            e.printStackTrace();
+            // Nothing
         }
         return null;
     }
@@ -90,6 +90,10 @@ implements
     }
 
     public byte readByte() {
+        if (mObject instanceof Integer) {
+            int readByte = (Integer) mObject;
+            return (byte) (readByte & 0xFF);
+        }
         return 0;
     }
 
