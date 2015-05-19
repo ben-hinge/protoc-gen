@@ -557,7 +557,7 @@ void CodeGenerator::GenMessageBuilder(
     google::protobuf::io::Printer *printer) 
 {
   std::string builder_name = message->name() + "Builder";
-  printer->Print("public class $builder$ {\n",
+  printer->Print("public static class $builder$ {\n",
                  "builder", builder_name);
   printer->Indent();
   for (int i = 0; i < message->field_count(); ++i) {
@@ -565,14 +565,15 @@ void CodeGenerator::GenMessageBuilder(
 
     string default_value = DefaultValueForField(field);
 
-    printer->Print("var $name$: $type$ = $default_value$\n",
+    printer->Print("private $type$ $name$ = $default_value$;\n",
                    "name", field->camelcase_name(),
                    "type", AndroidTypeForField(field, true),
                    "default_value", default_value);
   }
   printer->Print("\n");
 
-  printer->Print("public func clear() -> Self {\n");
+  printer->Print("public $builder$ clear() {\n",
+                 "builder", builder_name);
   printer->Indent();
 
   for (int i = 0; i < message->field_count(); ++i) {
@@ -580,11 +581,11 @@ void CodeGenerator::GenMessageBuilder(
 
     string default_value = DefaultValueForField(field);
 
-    printer->Print("self.$name$ = $default_value$\n",
+    printer->Print("this.$name$ = $default_value$\n",
                    "name", field->camelcase_name(),
                    "default_value", default_value);
   }
-  printer->Print("return self\n");
+  printer->Print("return this;\n");
 
   printer->Outdent();
   printer->Print("}\n\n");
@@ -594,54 +595,52 @@ void CodeGenerator::GenMessageBuilder(
 
     std::string field_name = field->camelcase_name();
 
-    printer->Print("public func set$name$(v: $type$) -> Self {\n",
+    printer->Print("public $builder$ set$name$($type$ v) {\n",
+                   "builder", builder_name,
                    "name", ToCamelCase(field->name(), false),
                    "type", AndroidTypeForField(field, true));
     printer->Indent();
-    printer->Print("self.$name$ = v\n",
+    printer->Print("this.$name$ = v;\n",
                    "name", field_name);
-    printer->Print("return self\n");
+    printer->Print("return this;\n");
     printer->Outdent();
     printer->Print("}\n\n");
 
 
-    printer->Print("public func clear$name$() -> Self {\n",
+    printer->Print("public $builder$ clear$name$() {\n",
+                   "builder", builder_name,
                    "name", ToCamelCase(field->name(), false));
     printer->Indent();
-    printer->Print("self.$name$ = $default_value$\n",
+    printer->Print("this.$name$ = $default_value$;\n",
                    "name", field_name,
                    "default_value", DefaultValueForField(field));
-    printer->Print("return self\n");
+    printer->Print("return this;\n");
     printer->Outdent();
     printer->Print("}\n\n");
   }
 
-  printer->Print("public func build() -> $type$ {\n",
+  printer->Print("public $builder$ build() {\n",
+                 "builder", builder_name,
                  "type", message->name());
   printer->Indent();
 
-  printer->Print("let sizeInBytes = $name$.sizeOf(",
+  printer->Print("int sizeInBytes = $name$.sizeOf(",
                   "name", message->name());
   for (int i = 0, lastI = message->field_count() - 1; i <= lastI; ++i) {
     const google::protobuf::FieldDescriptor *field = message->field(i);
-    if(i == 0){
-      printer->Print("$name$",
-                   "name", field->camelcase_name());
-    } else {
-      printer->Print("$name$: $name$",
-                     "name", field->camelcase_name());
-    }
+    printer->Print("$name$",
+                 "name", field->camelcase_name());
     if (i != lastI) {
       printer->Print(", ");
     }
   }
   printer->Print(")\n");
-  printer->Print("return $name$(sizeInBytes: sizeInBytes",
+  printer->Print("return new $name$(sizeInBytes",
                   "name", message->name());
   for (int i = 0, lastI = message->field_count() - 1; i <= lastI; ++i) {
     printer->Print(", ");
     const google::protobuf::FieldDescriptor *field = message->field(i);
-    printer->Print("$name$: $name$",
+    printer->Print("$name$",
                    "name", field->camelcase_name());
   }
   printer->Print(")\n");
