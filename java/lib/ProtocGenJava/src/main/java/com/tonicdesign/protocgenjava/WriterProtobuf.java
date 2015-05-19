@@ -21,11 +21,19 @@ implements
         return mByteOutputStream.toByteArray();
     }
 
+    public void writeTag(int tag) {
+        writeVarUInt(tag);
+    }
+
     public void writeByte(byte v) {
         mByteOutputStream.write(v);
     }
 
     public void writeVarInt(long v) {
+        writeVarUInt(v);
+    }
+
+    public void writeVarUInt(long v) {
         long x = v;
         while (x > 0x7F) {
             writeByte((byte) (x & 0x7F | 0x80));

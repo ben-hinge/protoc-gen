@@ -9,6 +9,14 @@ import static org.junit.Assert.assertTrue;
 public class WriterProtobufTest {
 
     @Test
+    public void testReaderProtobufReadTag() throws Exception {
+        byte testByte = 0x01 << 3 | 0x02;
+        WriterProtobuf WriterProtobuf = new WriterProtobuf(1);
+        WriterProtobuf.writeTag(testByte);
+        assertTrue(Arrays.equals(new byte[]{ testByte }, WriterProtobuf.toBuffer()));
+    }
+
+    @Test
     public void testWriterProtobufWriteByte() throws Exception {
         WriterProtobuf WriterProtobuf = new WriterProtobuf(1);
         WriterProtobuf.writeByte((byte) 0xFF);
@@ -33,6 +41,13 @@ public class WriterProtobufTest {
     public void testWriterProtobufWriteVarInt64Bits() throws Exception {
         WriterProtobuf WriterProtobuf = new WriterProtobuf(9);
         WriterProtobuf.writeVarInt(2886807498600235012L);
+        assertTrue(Arrays.equals(new byte[]{(byte) 0x84, (byte) 0x80, (byte) 0x81, (byte) 0x88, (byte) 0x80, (byte) 0x84, (byte) 0x80, (byte) 0x88, (byte) 0x28 }, WriterProtobuf.toBuffer()));
+    }
+
+    @Test
+    public void testWriterProtobufWriteVarUInt64Bits() throws Exception {
+        WriterProtobuf WriterProtobuf = new WriterProtobuf(9);
+        WriterProtobuf.writeVarUInt(2886807498600235012L);
         assertTrue(Arrays.equals(new byte[]{(byte) 0x84, (byte) 0x80, (byte) 0x81, (byte) 0x88, (byte) 0x80, (byte) 0x84, (byte) 0x80, (byte) 0x88, (byte) 0x28 }, WriterProtobuf.toBuffer()));
     }
 
