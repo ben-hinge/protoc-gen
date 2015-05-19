@@ -2,6 +2,7 @@ package com.tonicdesign.protocgenjava;
 
 import java.io.ByteArrayOutputStream;
 import java.nio.charset.Charset;
+import java.util.Map;
 
 public class WriterProtobuf
 implements
@@ -70,5 +71,13 @@ implements
         byte[] stringBytes = v.getBytes(Charset.forName("UTF-8"));
         writeVarInt((long)stringBytes.length);
         mByteOutputStream.write(stringBytes, 0, stringBytes.length);
+    }
+
+    public void pushTagMap(Map<Integer, TagMapValue> map) {
+        // Nothing
+    }
+
+    public void popTagMap() {
+        // Nothing
     }
 }
