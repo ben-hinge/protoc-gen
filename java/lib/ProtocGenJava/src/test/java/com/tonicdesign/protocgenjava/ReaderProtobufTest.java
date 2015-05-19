@@ -2,6 +2,8 @@ package com.tonicdesign.protocgenjava;
 
 import org.junit.Test;
 
+import java.util.HashMap;
+
 import static org.junit.Assert.assertEquals;
 
 public class ReaderProtobufTest {
@@ -74,5 +76,26 @@ public class ReaderProtobufTest {
     public void testReaderProtobufReadString() throws Exception {
         ReaderProtobuf readerProtobuf = ReaderProtobuf.fromBuffer(new byte[]{(byte) 0x06, (byte) 0x68, (byte) 0xC4, (byte) 0xA1, (byte) 0xE2, (byte) 0x88, (byte) 0x9A});
         assertEquals("h\u0121\u221A", readerProtobuf.readString());
+    }
+
+    @Test
+    public void testLimit() throws Exception {
+        byte testByte1 = 0x01 << 3 | 0x02;
+        byte testByte2 = 0x05 << 3 | 0x04;
+        ReaderProtobuf readerProtobuf = ReaderProtobuf.fromBuffer(new byte[]{testByte1, testByte2});
+        assertEquals(testByte1, readerProtobuf.readByte());
+        int limit = readerProtobuf.pushLimit(0);
+        assertEquals(0, readerProtobuf.readByte());
+        readerProtobuf.popLimit(limit);
+        assertEquals(testByte2, readerProtobuf.readByte());
+    }
+
+    @Test
+    public void testTagMap() throws Exception {
+        byte testByte = 0x01 << 3 | 0x02;
+        ReaderProtobuf readerProtobuf = ReaderProtobuf.fromBuffer(new byte[]{testByte});
+        readerProtobuf.pushTagMap(new HashMap<String, TagMapValue>());
+        assertEquals(testByte, readerProtobuf.readByte());
+        readerProtobuf.popTagMap();
     }
 }
