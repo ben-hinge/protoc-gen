@@ -133,19 +133,19 @@ string SwiftTypeForField(const google::protobuf::FieldDescriptor* field, bool fu
   string type;
   switch (field->type()) {
   case google::protobuf::FieldDescriptor::TYPE_BOOL:
-    type = "Bool"; 
+    type = "Boolean"; 
     break;
   case google::protobuf::FieldDescriptor::TYPE_INT32:
-    type = "Int"; 
+    type = "Integer"; 
     break;
   case google::protobuf::FieldDescriptor::TYPE_INT64:
-    type = "Int"; 
+    type = "Long"; 
     break;
   case google::protobuf::FieldDescriptor::TYPE_FLOAT:
-    type = "Float32"; 
+    type = "Float"; 
     break;
   case google::protobuf::FieldDescriptor::TYPE_DOUBLE:
-    type = "Float64"; 
+    type = "Double"; 
     break;
   case google::protobuf::FieldDescriptor::TYPE_STRING:
     type = "String"; 
@@ -161,12 +161,7 @@ string SwiftTypeForField(const google::protobuf::FieldDescriptor* field, bool fu
     break;
   }
   if (field->is_repeated()) {
-    type = "[" + type + "]";
-  }
-  if (field->is_optional()) {
-    type = type + "?";
-  } else if (field->type() == google::protobuf::FieldDescriptor::TYPE_MESSAGE || field->type() == google::protobuf::FieldDescriptor::TYPE_ENUM) {
-    type = type + "!";
+    type = type + "[]";
   }
   return type;
 }
@@ -239,6 +234,7 @@ bool CodeGenerator::Generate(
   std::string output_file_name = file->name();
   std::size_t loc = output_file_name.rfind(".");
   output_file_name.erase(loc, output_file_name.length() - loc);
+  std::string class_name = output_file_name;
   output_file_name.append(".pb.java");
 
   google::protobuf::internal::scoped_ptr<
@@ -257,20 +253,21 @@ bool CodeGenerator::Generate(
   printer.Print(
       "\n"
       "import java.util.HashMap;\n"
-      " import java.util.Map;\n"
+      "import java.util.Map;\n"
       "\n");
 
-  for (int i = 0; i < file->message_type_count(); ++i) {
-  	CodeGenerator::GenMessage_equality(
-  		file->message_type(i), 
-  		&printer);
- 	}
+  printer.Print("public class $name$ {\n",
+                 "name", class_name);
+  printer.Indent();
 
   for (int i = 0; i < file->message_type_count(); ++i) {
     CodeGenerator::GenDescriptor(
         file->message_type(i),
         &printer);
   }
+
+  printer.Outdent();
+  printer.Print("}\n");
 
   printer.Print("private func sizeOfVarInt(v: Int) -> Int {\n");
   printer.Indent();
@@ -313,13 +310,13 @@ void CodeGenerator::GenDescriptor(
     const google::protobuf::Descriptor *message,
     google::protobuf::io::Printer *printer) 
 {
-  printer->Print("public class $name$: Equatable {\n",
+  printer->Print("public static class $name$ {\n",
                  "name", message->name());
   printer->Indent();
-  printer->Print("public let sizeInBytes: Int\n");
+  printer->Print("public final int sizeInBytes;\n");
   for (int i = 0; i < message->field_count(); ++i) {
     const google::protobuf::FieldDescriptor *field = message->field(i);
-    printer->Print("public let $name$: $type$\n",
+    printer->Print("public final $type$ $name$;\n",
                    "name", field->camelcase_name(),
                    "type", SwiftTypeForField(field, false));
   }
@@ -378,40 +375,6 @@ void CodeGenerator::GenDescriptor(
   CodeGenerator::GenMessageBuilder(message, printer);
 
   printer->Print("\n");
-}
-
-void CodeGenerator::GenMessage_equality(
-    const google::protobuf::Descriptor *message,
-    google::protobuf::io::Printer *printer) 
-{
-
-	printer->Print("\n");
-	printer->Print("public func ==(a: $name$, b: $name$) -> Bool {\n",
-				   "name", message->full_name());
-	printer->Indent();
-	printer->Print("return (\n");
-	printer->Indent();
-	printer->Indent();
-	printer->Print(" a.sizeInBytes == b.sizeInBytes\n");
-	printer->Outdent();
-	for (int i = 0; i < message->field_count(); ++i) {
-    const google::protobuf::FieldDescriptor *field = message->field(i);
-    printer->Print("&& a.$name$ == b.$name$\n",
-    	"name", field->camelcase_name());
-	}
-	printer->Outdent();
-	printer->Print(")\n");
-	printer->Outdent();
-	printer->Print("}\n");
-
-	for (int i = 0; i < message->nested_type_count(); ++i) {
-    const google::protobuf::Descriptor *nested_type = message->nested_type(i);
-    CodeGenerator::GenMessage_equality(
-        nested_type,
-        printer);
-    printer->Print("\n");
-  }
-
 }
 
 void CodeGenerator::GenMessage_fromReader(

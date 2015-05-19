@@ -53,10 +53,6 @@ class CodeGenerator : public ::google::protobuf::compiler::CodeGenerator {
   static void GenEnum(
       const google::protobuf::EnumDescriptor *enum_desc,
       google::protobuf::io::Printer *printer);
-
-  static void GenMessage_equality(
-      const google::protobuf::Descriptor *message,
-      google::protobuf::io::Printer *printer);
   
   static void GenMessage_fromReader(
       const google::protobuf::Descriptor *message,
