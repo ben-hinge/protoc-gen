@@ -3,6 +3,18 @@ package com.tonicdesign.protocgenjava;
 import java.util.Map;
 
 public interface Reader {
+
+    class TagMapValue {
+
+        public final int key;
+        public final boolean isRepeated;
+
+        public TagMapValue(int key, boolean isRepeated) {
+            this.key = key;
+            this.isRepeated = isRepeated;
+        }
+    }
+
     int readTag();
     byte readByte();
     long readVarInt();

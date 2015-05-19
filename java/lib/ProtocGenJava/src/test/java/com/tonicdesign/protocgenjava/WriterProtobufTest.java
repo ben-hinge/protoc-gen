@@ -84,7 +84,7 @@ public class WriterProtobufTest {
     public void testTagMap() throws Exception {
         byte testByte = 0x01 << 3 | 0x02;
         WriterProtobuf writerProtobuf = WriterProtobuf.withCapacity(1);
-        writerProtobuf.pushTagMap(new HashMap<Integer, TagMapValue>());
+        writerProtobuf.pushTagMap(new HashMap<Integer, Writer.TagMapValue>());
         writerProtobuf.writeByte(testByte);
         writerProtobuf.popTagMap();
         assertTrue(Arrays.equals(new byte[]{testByte}, writerProtobuf.toBuffer()));
