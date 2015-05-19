@@ -288,10 +288,10 @@ bool CodeGenerator::Generate(
   printer.Print("}\n");
   printer.Print("\n");
 
-  printer.Print("private func sizeOfString(s: String) -> Int {\n");
+  printer.Print("static int sizeOfString(String s) {\n");
   printer.Indent();
-  printer.Print("let b = countElements(s.utf8)\n");
-  printer.Print("return sizeOfVarInt(b) + b\n");
+  printer.Print("int length = s.length();\n");
+  printer.Print("return sizeOfVarInt(length) + length;\n");
   printer.Outdent();
   printer.Print("}\n");
   printer.Print("\n");
