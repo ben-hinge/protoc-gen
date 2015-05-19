@@ -129,7 +129,7 @@ string CEscape(const string& src) {
   return string(dest.get(), len);
 }
 
-string SwiftTypeForField(const google::protobuf::FieldDescriptor* field, bool fully_qualified) {
+string AndroidType(const google::protobuf::FieldDescriptor* field, bool fully_qualified) {
   string type;
   switch (field->type()) {
   case google::protobuf::FieldDescriptor::TYPE_BOOL:
@@ -160,6 +160,12 @@ string SwiftTypeForField(const google::protobuf::FieldDescriptor* field, bool fu
     type = "/* unknown */";
     break;
   }
+  return type;
+}
+
+string AndroidTypeForField(const google::protobuf::FieldDescriptor* field, bool fully_qualified) {
+  string type;
+  type = AndroidType(field, fully_qualified);
   if (field->is_repeated()) {
     type = type + "[]";
   }
@@ -318,7 +324,7 @@ void CodeGenerator::GenDescriptor(
     const google::protobuf::FieldDescriptor *field = message->field(i);
     printer->Print("public final $type$ $name$;\n",
                    "name", field->camelcase_name(),
-                   "type", SwiftTypeForField(field, false));
+                   "type", AndroidTypeForField(field, false));
   }
   printer->Print("\n");
 
@@ -329,7 +335,7 @@ void CodeGenerator::GenDescriptor(
     const google::protobuf::FieldDescriptor *field = message->field(i);
     printer->Print("$type$ $name$",
                    "name", field->camelcase_name(),
-                   "type", SwiftTypeForField(field, false));
+                   "type", AndroidTypeForField(field, false));
   }
   printer->Print(") {\n");
   printer->Indent();
@@ -420,7 +426,7 @@ void CodeGenerator::GenMessage_fromReader(
 
     printer->Print("var $name$: $type$ = $default_value$\n",
                    "name", field->camelcase_name(),
-                   "type", SwiftTypeForField(field, false),
+                   "type", AndroidTypeForField(field, false),
                    "default_value", default_value);
   }
   printer->Print("\n");
@@ -568,7 +574,7 @@ void CodeGenerator::GenMessageBuilder(
 
     printer->Print("var $name$: $type$ = $default_value$\n",
                    "name", field->camelcase_name(),
-                   "type", SwiftTypeForField(field, true),
+                   "type", AndroidTypeForField(field, true),
                    "default_value", default_value);
   }
   printer->Print("\n");
@@ -597,7 +603,7 @@ void CodeGenerator::GenMessageBuilder(
 
     printer->Print("public func set$name$(v: $type$) -> Self {\n",
                    "name", ToCamelCase(field->name(), false),
-                   "type", SwiftTypeForField(field, true));
+                   "type", AndroidTypeForField(field, true));
     printer->Indent();
     printer->Print("self.$name$ = v\n",
                    "name", field_name);
@@ -658,12 +664,11 @@ void CodeGenerator::GenMessage_toWriter(
     const google::protobuf::Descriptor *message,
     google::protobuf::io::Printer *printer) 
 {
-  printer->Print("public func toWriter(w: Writer) {\n");
+  printer->Print("public void toWriter(Writer w) {\n");
   printer->Indent();
 
 
-  printer->Print("var tagMap: [Int:(String, Bool)] = [ \n");
-  printer->Indent();
+  printer->Print("Map<Integer, Writer.TagMapValue> tagMap = new HashMap<Integer, Writer.TagMapValue>(); \n");
     
   for (int i = 0; i < message->field_count(); ++i) {
     const google::protobuf::FieldDescriptor *field = message->field(i);
@@ -676,7 +681,7 @@ void CodeGenerator::GenMessage_toWriter(
       isRepeated = "true";
     }
 
-    printer->Print("$tag$ : (\"$name$\", $repeated$)",
+    printer->Print("tagMap.put($tag$, new Writer.TagMapValue(\"$name$\", $repeated$));",
                     "tag", tag,
                     "name", name,
                     "repeated", isRepeated);
@@ -684,24 +689,22 @@ void CodeGenerator::GenMessage_toWriter(
     i != message->field_count() - 1 ? printer->Print(",\n") : printer->Print("\n");
   }
 
-  printer->Outdent();
-  printer->Print("]\n\n");
-
-  printer->Print("w.pushTagMap(tagMap)\n\n");
+  printer->Print("\n");
+  printer->Print("w.pushTagMap(tagMap);\n\n");
 
   for (int i = 0; i < message->field_count(); ++i) {
     const google::protobuf::FieldDescriptor *field = message->field(i);
-    string name = "self." + field->camelcase_name();
+    string name = "this." + field->camelcase_name();
     string tag = to_string(WireFormatLite::MakeTag(field->number(), WireFormat::WireTypeForField(field)));
 
     if (field->is_optional()) {
-      printer->Print("if let v = $name$ {\n",
+      printer->Print("if (null != $name$) {\n",
                      "name", name);
       printer->Indent();
-      name = "v";
     } else if (field->is_repeated()) {
-      printer->Print("for v in $name$ {\n",
-                     "name", name);
+      printer->Print("for ($type$ v : $name$) {\n",
+                   "type", AndroidType(field, false),
+                   "name", name);
       printer->Indent();
       name = "v";
     }
@@ -769,7 +772,7 @@ void CodeGenerator::GenMessage_sizeOf(
     const google::protobuf::FieldDescriptor *field = message->field(i);
     printer->Print("$name$: $type$",
                    "name", field->camelcase_name(),
-                   "type", SwiftTypeForField(field, false));
+                   "type", AndroidTypeForField(field, false));
     if (i != lastI) {
       printer->Print(", ");
     }
