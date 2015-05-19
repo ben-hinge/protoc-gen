@@ -99,6 +99,9 @@ implements
     }
 
     public void popTagMap() {
-
+        if (mTagMapStack.size() > 0) {
+            mTagMap = mTagMapStack.pop();
+            mObject = mObjectStack.pop();
+        }
     }
 }

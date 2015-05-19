@@ -15,6 +15,8 @@ public class WriterJSONTest {
     private static final String TEST_TAG_JSON_KEY = "testTag";
     private static final int TEST_TAG_REPEATED = 20;
     private static final String TEST_TAG_REPEATED_JSON_KEY = "testTagRepeated";
+    private static final int TEST_TAG_NESTED = 30;
+    private static final String TEST_TAG_NESTED_JSON_KEY = "testTagNested";
 
     private WriterJSON mWriter = new WriterJSON();
 
@@ -87,6 +89,18 @@ public class WriterJSONTest {
         mWriter.writeTag(TEST_TAG_REPEATED);
         mWriter.writeString("string4");
         assertTrue(Arrays.equals(bytesFromJSON("{\"testTagRepeated\":[\"string1\",\"string2\",\"string3\",\"string4\"]}"), mWriter.toBuffer()));
+    }
+
+    @Test
+    public void testWriteNestedObject() throws Exception {
+        mWriter.writeTag(TEST_TAG);
+        mWriter.pushTagMap(new HashMap<Integer, Writer.TagMapValue>() {{
+            put(TEST_TAG_NESTED, new Writer.TagMapValue(TEST_TAG_NESTED_JSON_KEY, false));
+        }});
+        mWriter.writeTag(TEST_TAG_NESTED);
+        mWriter.writeBool(true);
+        mWriter.popTagMap();
+        assertTrue(Arrays.equals(bytesFromJSON("{\"testTag\":{\"testTagNested\":true}}"), mWriter.toBuffer()));
     }
 
     private byte[] bytesFromJSON(String json) {
