@@ -58,6 +58,10 @@ class CodeGenerator : public ::google::protobuf::compiler::CodeGenerator {
       const google::protobuf::Descriptor *message,
       google::protobuf::io::Printer *printer);
 
+  static void GenMessage_equality(
+      const google::protobuf::Descriptor *message,
+      google::protobuf::io::Printer *printer);
+
   static void GenMessage_builder(
       const google::protobuf::Descriptor *message,
       google::protobuf::io::Printer *printer);

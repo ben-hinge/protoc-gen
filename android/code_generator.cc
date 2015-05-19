@@ -355,6 +355,9 @@ void CodeGenerator::GenDescriptor(
   CodeGenerator::GenMessage_sizeOf(message, printer);
   printer->Print("\n");
 
+  CodeGenerator::GenMessage_equality(message, printer);
+  printer->Print("\n");
+
   CodeGenerator::GenMessage_builder(message, printer);
   printer->Print("\n");
 
@@ -752,12 +755,56 @@ void CodeGenerator::GenMessage_toWriter(
   printer->Print("}\n");
 }
 
+void CodeGenerator::GenMessage_equality(
+    const google::protobuf::Descriptor *message,
+    google::protobuf::io::Printer *printer) 
+{
+  string name = message->name();
+
+  printer->Print("@Overrride\n");
+  printer->Print("public boolean equals(Object object) {\n");
+  printer->Indent();
+
+  printer->Print("if (object instanceof $name$) {\n",
+                 "name", name);
+  printer->Indent();
+
+  printer->Print("$name$ castObject = ($name$) object;\n",
+                 "name", name);
+
+  printer->Print("return (\n");
+  printer->Indent();
+
+  printer->Indent();
+  printer->Print(" this.sizeInBytes == demoMessage.sizeInBytes\n");
+  printer->Outdent();
+  
+
+  for (int i = 0; i < message->field_count(); ++i) {
+    const google::protobuf::FieldDescriptor *field = message->field(i);
+    printer->Print("&& this.$name$ == castObject.$name$\n",
+      "name", field->camelcase_name());
+  }
+
+  printer->Outdent();
+  printer->Print(")\n");
+
+  printer->Outdent();
+  printer->Print("} else {\n");
+  printer->Indent();
+  printer->Print(" return false;\n");
+  printer->Outdent();
+  printer->Print("}\n");
+
+  printer->Outdent();
+  printer->Print("}\n");
+}
+
 void CodeGenerator::GenMessage_sizeOf(
     const google::protobuf::Descriptor *message,
     google::protobuf::io::Printer *printer) 
 {
-  printer->Print("static int sizeOf(",
-                 "name", message->name());
+  printer->Print("static int sizeOf(");
   for (int i = 0, lastI = message->field_count() - 1; i <= lastI; ++i) {
     const google::protobuf::FieldDescriptor *field = message->field(i);
     printer->Print("$type$ $name$",
