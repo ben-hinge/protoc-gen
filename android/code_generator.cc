@@ -322,20 +322,21 @@ void CodeGenerator::GenDescriptor(
   }
   printer->Print("\n");
 
-  printer->Print("init(sizeInBytes: Int");
+  printer->Print("public $name$(int sizeInBytes",
+                 "name", message->name());
   for (int i = 0, lastI = message->field_count() - 1; i <= lastI; ++i) {
     printer->Print(", ");
     const google::protobuf::FieldDescriptor *field = message->field(i);
-    printer->Print("$name$: $type$",
+    printer->Print("$type$ $name$",
                    "name", field->camelcase_name(),
                    "type", SwiftTypeForField(field, false));
   }
   printer->Print(") {\n");
   printer->Indent();
-  printer->Print("self.sizeInBytes = sizeInBytes\n");
+  printer->Print("this.sizeInBytes = sizeInBytes;\n");
   for (int i = 0; i < message->field_count(); ++i) {
     const google::protobuf::FieldDescriptor *field = message->field(i);
-    printer->Print("self.$name$ = $name$\n",
+    printer->Print("this.$name$ = $name$;\n",
                    "name", field->camelcase_name());
   }
   printer->Outdent();
