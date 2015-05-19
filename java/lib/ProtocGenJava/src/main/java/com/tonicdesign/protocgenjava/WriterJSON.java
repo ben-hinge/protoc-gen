@@ -1,9 +1,12 @@
 package com.tonicdesign.protocgenjava;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 
@@ -60,14 +63,21 @@ implements
     private void writeValue(Object v, JSONObject object) {
         TagMapValue tagMapValue = mTagMap.get(mTag);
         if (null != tagMapValue) {
-            if (tagMapValue.isRepeated) {
-                // Repeated
-            } else {
-                try {
+            try {
+                if (tagMapValue.isRepeated) {
+                    JSONArray repeatedObject;
+                    if (object.has(tagMapValue.key)) {
+                        repeatedObject = object.getJSONArray(tagMapValue.key);
+                    } else {
+                        repeatedObject = new JSONArray();
+                        object.put(tagMapValue.key, repeatedObject);
+                    }
+                    repeatedObject.put(v);
+                } else {
                     object.put(tagMapValue.key, v);
-                } catch (JSONException e) {
-                    // error
                 }
+            } catch (JSONException e) {
+                // error
             }
         }else {
             // error

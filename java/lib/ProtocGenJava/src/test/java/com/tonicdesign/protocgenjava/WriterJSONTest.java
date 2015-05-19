@@ -23,7 +23,7 @@ public class WriterJSONTest {
         mWriter = new WriterJSON();
         mWriter.pushTagMap(new HashMap<Integer, Writer.TagMapValue>() {{
             put(TEST_TAG, new Writer.TagMapValue(TEST_TAG_JSON_KEY, false));
-            put(TEST_TAG_REPEATED, new Writer.TagMapValue(TEST_TAG_REPEATED_JSON_KEY, false));
+            put(TEST_TAG_REPEATED, new Writer.TagMapValue(TEST_TAG_REPEATED_JSON_KEY, true));
         }});
     }
 
@@ -74,6 +74,19 @@ public class WriterJSONTest {
         mWriter.writeTag(TEST_TAG);
         mWriter.writeString("h\u0121\u221A");
         assertTrue(Arrays.equals(bytesFromJSON("{\"testTag\":\"h\u0121\u221A\"}"), mWriter.toBuffer()));
+    }
+
+    @Test
+    public void testWriteRepeatedString() throws Exception {
+        mWriter.writeTag(TEST_TAG_REPEATED);
+        mWriter.writeString("string1");
+        mWriter.writeTag(TEST_TAG_REPEATED);
+        mWriter.writeString("string2");
+        mWriter.writeTag(TEST_TAG_REPEATED);
+        mWriter.writeString("string3");
+        mWriter.writeTag(TEST_TAG_REPEATED);
+        mWriter.writeString("string4");
+        assertTrue(Arrays.equals(bytesFromJSON("{\"testTagRepeated\":[\"string1\",\"string2\",\"string3\",\"string4\"]}"), mWriter.toBuffer()));
     }
 
     private byte[] bytesFromJSON(String json) {
