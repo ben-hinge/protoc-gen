@@ -543,10 +543,10 @@ void CodeGenerator::GenMessage_builder(
     const google::protobuf::Descriptor *message,
     google::protobuf::io::Printer *printer) 
 {
-  printer->Print("public class func builder() -> $name$Builder {\n",
+  printer->Print("public static $name$Builder builder() {\n",
                  "name", message->name());
   printer->Indent();
-  printer->Print("return $name$Builder()\n",
+  printer->Print("return new $name$Builder();\n",
                  "name", message->name());
   printer->Outdent();
   printer->Print("}\n");
@@ -760,7 +760,6 @@ void CodeGenerator::GenMessage_equality(
     google::protobuf::io::Printer *printer) 
 {
   string name = message->name();
-
   printer->Print("@Overrride\n");
   printer->Print("public boolean equals(Object object) {\n");
   printer->Indent();
@@ -771,15 +770,12 @@ void CodeGenerator::GenMessage_equality(
 
   printer->Print("$name$ castObject = ($name$) object;\n",
                  "name", name);
-
   printer->Print("return (\n");
   printer->Indent();
-
   printer->Indent();
   printer->Print(" this.sizeInBytes == demoMessage.sizeInBytes\n");
   printer->Outdent();
   
-
   for (int i = 0; i < message->field_count(); ++i) {
     const google::protobuf::FieldDescriptor *field = message->field(i);
     printer->Print("&& this.$name$ == castObject.$name$\n",
@@ -788,14 +784,12 @@ void CodeGenerator::GenMessage_equality(
 
   printer->Outdent();
   printer->Print(")\n");
-
   printer->Outdent();
   printer->Print("} else {\n");
   printer->Indent();
   printer->Print(" return false;\n");
   printer->Outdent();
   printer->Print("}\n");
-
   printer->Outdent();
   printer->Print("}\n");
 }
