@@ -3,6 +3,7 @@ package com.tonicdesign.protocgenjava;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.HashMap;
 
@@ -30,13 +31,17 @@ public class WriterJSONTest {
     public void testWriteByte() throws Exception {
         mWriter.writeTag(TEST_TAG);
         mWriter.writeByte((byte) 0xFA);
-        assertTrue(Arrays.equals(new byte[]{ (byte) 0x7b, (byte) 0x22, (byte) 0x74, (byte) 0x65, (byte) 0x73, (byte) 0x74, (byte) 0x54, (byte) 0x61, (byte) 0x67, (byte) 0x22, (byte) 0x3a, (byte) 0x32, (byte) 0x35, (byte) 0x30, (byte) 0x7d }, mWriter.toBuffer()));
+        assertTrue(Arrays.equals(bytesFromJSON("{\"testTag\":250}"), mWriter.toBuffer()));
     }
 
     @Test
     public void testWriteVarInt64Bits() throws Exception {
         mWriter.writeTag(TEST_TAG);
         mWriter.writeVarInt(2886807498600235012L);
-        assertTrue(Arrays.equals(new byte[]{ (byte) 0x7b, (byte) 0x22, (byte) 0x74, (byte) 0x65, (byte) 0x73, (byte) 0x74, (byte) 0x54, (byte) 0x61, (byte) 0x67, (byte) 0x22, (byte) 0x3a, (byte) 0x32, (byte) 0x38, (byte) 0x38, (byte) 0x36, (byte) 0x38, (byte) 0x30, (byte) 0x37, (byte) 0x34, (byte) 0x39, (byte) 0x38, (byte) 0x36, (byte) 0x30, (byte) 0x30, (byte) 0x32, (byte) 0x33, (byte) 0x35, (byte) 0x30, (byte) 0x31, (byte) 0x32, (byte) 0x7d }, mWriter.toBuffer()));
+        assertTrue(Arrays.equals(bytesFromJSON("{\"testTag\":2886807498600235012}"), mWriter.toBuffer()));
+    }
+
+    private byte[] bytesFromJSON(String json) {
+        return json.getBytes(Charset.forName("UTF-8"));
     }
 }
