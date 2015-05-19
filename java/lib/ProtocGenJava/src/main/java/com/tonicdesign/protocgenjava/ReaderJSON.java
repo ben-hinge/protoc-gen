@@ -167,6 +167,11 @@ implements
     }
 
     public void popTagMap() {
-
+        if (mTagMapStack.size() > 0) {
+            mTagMap = mTagMapStack.pop();
+            mJSONObject = mJSONObjectStack.pop();
+            mKeyIterator = mKeyIteratorStack.pop();
+            mRepeatedObject = mRepeatedObjectStack.pop();
+        }
     }
 }

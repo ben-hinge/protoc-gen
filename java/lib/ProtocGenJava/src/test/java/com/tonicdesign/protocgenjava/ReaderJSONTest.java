@@ -1,7 +1,5 @@
 package com.tonicdesign.protocgenjava;
 
-import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 
 import java.nio.charset.Charset;
@@ -13,6 +11,8 @@ public class ReaderJSONTest {
 
     private static final int TEST_TAG = 10;
     private static final String TEST_TAG_JSON_KEY = "testTag";
+    private static final int TEST_TAG_2 = 15;
+    private static final String TEST_TAG_2_JSON_KEY = "testTag2";
     private static final int TEST_TAG_REPEATED = 20;
     private static final String TEST_TAG_REPEATED_JSON_KEY = "testTagRepeated";
     private static final int TEST_TAG_NESTED = 30;
@@ -124,6 +124,24 @@ public class ReaderJSONTest {
         assertEquals("string3", mReader.readString());
         assertEquals(TEST_TAG_REPEATED, mReader.readTag());
         assertEquals("string4", mReader.readString());
+    }
+
+    @Test
+    public void testNestedObject() throws Exception {
+        mReader = ReaderJSON.fromBuffer(bytesFromJSON("{\"testTag\":{\"testTagNested\":true},\"testTag2\":\"hello\"}"));
+        mReader.pushTagMap(new HashMap<String, Reader.TagMapValue>() {{
+            put(TEST_TAG_JSON_KEY, new Reader.TagMapValue(TEST_TAG, false));
+            put(TEST_TAG_2_JSON_KEY, new Reader.TagMapValue(TEST_TAG_2, false));
+        }});
+        assertEquals(TEST_TAG, mReader.readTag());
+        mReader.pushTagMap(new HashMap<String, Reader.TagMapValue>() {{
+            put(TEST_TAG_NESTED_JSON_KEY, new Reader.TagMapValue(TEST_TAG_NESTED, false));
+        }});
+        assertEquals(TEST_TAG_NESTED, mReader.readTag());
+        assertEquals(true, mReader.readBool());
+        mReader.popTagMap();
+        assertEquals(TEST_TAG_2, mReader.readTag());
+        assertEquals("hello", mReader.readString());
     }
 
     private byte[] bytesFromJSON(String json) {
