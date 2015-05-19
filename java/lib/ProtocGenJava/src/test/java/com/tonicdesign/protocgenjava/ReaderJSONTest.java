@@ -13,6 +13,10 @@ public class ReaderJSONTest {
 
     private static final int TEST_TAG = 10;
     private static final String TEST_TAG_JSON_KEY = "testTag";
+    private static final int TEST_TAG_REPEATED = 20;
+    private static final String TEST_TAG_REPEATED_JSON_KEY = "testTagRepeated";
+    private static final int TEST_TAG_NESTED = 30;
+    private static final String TEST_TAG_NESTED_JSON_KEY = "testTagNested";
 
     private ReaderJSON mReader;
 
@@ -104,6 +108,22 @@ public class ReaderJSONTest {
         }});
         assertEquals(TEST_TAG, mReader.readTag());
         assertEquals("h\u0121\u221A", mReader.readString());
+    }
+
+    @Test
+    public void testReadRepeatedString() throws Exception {
+        mReader = ReaderJSON.fromBuffer(bytesFromJSON("{\"testTagRepeated\":[\"string1\",\"string2\",\"string3\",\"string4\"]}"));
+        mReader.pushTagMap(new HashMap<String, Reader.TagMapValue>() {{
+            put(TEST_TAG_REPEATED_JSON_KEY, new Reader.TagMapValue(TEST_TAG_REPEATED, true));
+        }});
+        assertEquals(TEST_TAG_REPEATED, mReader.readTag());
+        assertEquals("string1", mReader.readString());
+        assertEquals(TEST_TAG_REPEATED, mReader.readTag());
+        assertEquals("string2", mReader.readString());
+        assertEquals(TEST_TAG_REPEATED, mReader.readTag());
+        assertEquals("string3", mReader.readString());
+        assertEquals(TEST_TAG_REPEATED, mReader.readTag());
+        assertEquals("string4", mReader.readString());
     }
 
     private byte[] bytesFromJSON(String json) {
