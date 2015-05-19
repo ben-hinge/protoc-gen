@@ -34,23 +34,23 @@ implements
     }
 
     public void writeVarUInt(long v) {
-
+        writeValue(v);
     }
 
     public void writeBool(boolean v) {
-
+        writeValue(v);
     }
 
     public void writeFloat32(float v) {
-
+        writeValue(v);
     }
 
     public void writeFloat64(double v) {
-
+        writeValue(v);
     }
 
     public void writeString(String v) {
-
+        writeValue(v);
     }
 
     private void writeValue(Object v) {
