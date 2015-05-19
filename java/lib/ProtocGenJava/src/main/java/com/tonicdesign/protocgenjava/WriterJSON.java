@@ -30,7 +30,7 @@ implements
     }
 
     public void writeVarInt(long v) {
-
+        writeValue(v);
     }
 
     public void writeVarUInt(long v) {
