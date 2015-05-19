@@ -173,6 +173,96 @@ public class ReaderJSONTest {
         mReader.popLimit(limit);
     }
 
+    @Test
+    public void testIncorrectByteValue() throws Exception {
+        mReader = ReaderJSON.fromBuffer(bytesFromJSON("{\"testTag\": true}"));
+        mReader.pushTagMap(new HashMap<String, Reader.TagMapValue>() {{
+            put(TEST_TAG_JSON_KEY, new Reader.TagMapValue(TEST_TAG, false));
+        }});
+        assertEquals(TEST_TAG, mReader.readTag());
+        assertEquals(0, mReader.readByte());
+    }
+
+    @Test
+    public void testIncorrectVarIntValue() throws Exception {
+        mReader = ReaderJSON.fromBuffer(bytesFromJSON("{\"testTag\": true}"));
+        mReader.pushTagMap(new HashMap<String, Reader.TagMapValue>() {{
+            put(TEST_TAG_JSON_KEY, new Reader.TagMapValue(TEST_TAG, false));
+        }});
+        assertEquals(TEST_TAG, mReader.readTag());
+        assertEquals(0, mReader.readVarInt());
+    }
+
+    @Test
+    public void testIncorrectVarUIntValue() throws Exception {
+        mReader = ReaderJSON.fromBuffer(bytesFromJSON("{\"testTag\": true}"));
+        mReader.pushTagMap(new HashMap<String, Reader.TagMapValue>() {{
+            put(TEST_TAG_JSON_KEY, new Reader.TagMapValue(TEST_TAG, false));
+        }});
+        assertEquals(TEST_TAG, mReader.readTag());
+        assertEquals(0, mReader.readVarUInt());
+    }
+
+    @Test
+    public void testIncorrectBoolValue() throws Exception {
+        mReader = ReaderJSON.fromBuffer(bytesFromJSON("{\"testTag\": \"not a bool\"}"));
+        mReader.pushTagMap(new HashMap<String, Reader.TagMapValue>() {{
+            put(TEST_TAG_JSON_KEY, new Reader.TagMapValue(TEST_TAG, false));
+        }});
+        assertEquals(TEST_TAG, mReader.readTag());
+        assertEquals(false, mReader.readBool());
+    }
+
+    @Test
+    public void testIncorrectUInt32Value() throws Exception {
+        mReader = ReaderJSON.fromBuffer(bytesFromJSON("{\"testTag\": true}"));
+        mReader.pushTagMap(new HashMap<String, Reader.TagMapValue>() {{
+            put(TEST_TAG_JSON_KEY, new Reader.TagMapValue(TEST_TAG, false));
+        }});
+        assertEquals(TEST_TAG, mReader.readTag());
+        assertEquals(0, mReader.readUInt32());
+    }
+
+    @Test
+    public void testIncorrectUInt64Value() throws Exception {
+        mReader = ReaderJSON.fromBuffer(bytesFromJSON("{\"testTag\": true}"));
+        mReader.pushTagMap(new HashMap<String, Reader.TagMapValue>() {{
+            put(TEST_TAG_JSON_KEY, new Reader.TagMapValue(TEST_TAG, false));
+        }});
+        assertEquals(TEST_TAG, mReader.readTag());
+        assertEquals(0, mReader.readUInt64());
+    }
+
+    @Test
+    public void testIncorrectFloat32Value() throws Exception {
+        mReader = ReaderJSON.fromBuffer(bytesFromJSON("{\"testTag\": true}"));
+        mReader.pushTagMap(new HashMap<String, Reader.TagMapValue>() {{
+            put(TEST_TAG_JSON_KEY, new Reader.TagMapValue(TEST_TAG, false));
+        }});
+        assertEquals(TEST_TAG, mReader.readTag());
+        assertEquals(0, mReader.readFloat32(), 0.001);
+    }
+
+    @Test
+    public void testIncorrectFloat64Value() throws Exception {
+        mReader = ReaderJSON.fromBuffer(bytesFromJSON("{\"testTag\": true}"));
+        mReader.pushTagMap(new HashMap<String, Reader.TagMapValue>() {{
+            put(TEST_TAG_JSON_KEY, new Reader.TagMapValue(TEST_TAG, false));
+        }});
+        assertEquals(TEST_TAG, mReader.readTag());
+        assertEquals(0, mReader.readFloat64(), 0.001);
+    }
+
+    @Test
+    public void testIncorrectStringValue() throws Exception {
+        mReader = ReaderJSON.fromBuffer(bytesFromJSON("{\"testTag\": true}"));
+        mReader.pushTagMap(new HashMap<String, Reader.TagMapValue>() {{
+            put(TEST_TAG_JSON_KEY, new Reader.TagMapValue(TEST_TAG, false));
+        }});
+        assertEquals(TEST_TAG, mReader.readTag());
+        assertEquals("", mReader.readString());
+    }
+
     private byte[] bytesFromJSON(String json) {
         return json.getBytes(Charset.forName("UTF-8"));
     }
