@@ -10,7 +10,7 @@ import static org.junit.Assert.assertTrue;
 public class WriterProtobufTest {
 
     @Test
-    public void testReaderProtobufReadTag() throws Exception {
+    public void testWriterProtobufWriteTag() throws Exception {
         byte testByte = 0x01 << 3 | 0x02;
         WriterProtobuf writerProtobuf = WriterProtobuf.withCapacity(1);
         writerProtobuf.writeTag(testByte);
