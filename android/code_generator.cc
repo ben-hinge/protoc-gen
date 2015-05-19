@@ -174,44 +174,42 @@ string AndroidTypeForField(const google::protobuf::FieldDescriptor* field, bool 
 
 string DefaultValueForField(const google::protobuf::FieldDescriptor* field) {
   string default_value = "/* default value unknown */";
-  if (field->is_repeated()) {
-    default_value = "[]";
-  } else if (field->type() == google::protobuf::FieldDescriptor::TYPE_MESSAGE || field->type() == google::protobuf::FieldDescriptor::TYPE_ENUM) {
-    default_value = "nil";
+  if (field->is_repeated() || field->type() == google::protobuf::FieldDescriptor::TYPE_MESSAGE || field->type() == google::protobuf::FieldDescriptor::TYPE_ENUM) {
+    default_value = "null";
   } else {
     switch (field->cpp_type()) {
       case internal::WireFormatLite::CPPTYPE_BOOL:
-        default_value = field->is_optional() ? "nil" : "false";
+        default_value = field->is_optional() ? "null" : "false";
         if (field->has_default_value()) { 
           default_value = field->default_value_bool() ? "true" : "false";
         }
         break;
       case internal::WireFormatLite::CPPTYPE_INT32:
-        default_value = field->is_optional() ? "nil" : "0";
+        default_value = field->is_optional() ? "null" : "0";
         if (field->has_default_value()) { 
           default_value = to_string(field->default_value_int32());
         }
         break;
       case internal::WireFormatLite::CPPTYPE_INT64:
-        default_value = field->is_optional() ? "nil" : "0";
+        default_value = field->is_optional() ? "null" : "0";
         if (field->has_default_value()) { 
           default_value = to_string(field->default_value_int32());
         }
         break;
       case internal::WireFormatLite::CPPTYPE_FLOAT:
-        default_value = field->is_optional() ? "nil" : "0";
+        default_value = field->is_optional() ? "null" : "0";
         if (field->has_default_value()) { 
           default_value = to_string(field->default_value_float());
         }
         break;
       case internal::WireFormatLite::CPPTYPE_DOUBLE:
-        default_value = field->is_optional() ? "nil" : "0";
+        default_value = field->is_optional() ? "null" : "0";
         if (field->has_default_value()) { 
           default_value = to_string(field->default_value_double());
         }
         break;
       case internal::WireFormatLite::CPPTYPE_STRING:
-        default_value = field->is_optional() ? "nil" : "\"\"";
+        default_value = field->is_optional() ? "null" : "\"\"";
         if (field->has_default_value()) { 
           default_value = "\"" + CEscape(field->default_value_string()) + "\"";
         }
@@ -388,12 +386,11 @@ void CodeGenerator::GenMessage_fromReader(
     const google::protobuf::Descriptor *message,
     google::protobuf::io::Printer *printer) 
 {
-  printer->Print("public class func fromReader(r: Reader) -> $name$ {\n",
+  printer->Print("public static $name$ fromReader(Reader r) {\n",
                  "name", message->name());
   printer->Indent();
 
-  printer->Print("var tagMap: [String:(Int, Bool)] = [ \n");
-  printer->Indent();
+  printer->Print("Map<String, Reader.TagMapValue> tagMap = new HashMap<String, Reader.TagMapValue>();\n");
     
   for (int i = 0; i < message->field_count(); ++i) {
     const google::protobuf::FieldDescriptor *field = message->field(i);
@@ -406,7 +403,7 @@ void CodeGenerator::GenMessage_fromReader(
       isRepeated = "true";
     }
 
-    printer->Print("\"$name$\" : ($tag$, $repeated$)",
+    printer->Print("tagMap.put(\"$name$\", new Reader.TagMapValue($tag$, $repeated$));",
                     "name", name,
                     "tag", tag,
                     "repeated", isRepeated);
@@ -414,24 +411,22 @@ void CodeGenerator::GenMessage_fromReader(
     i != message->field_count() - 1 ? printer->Print(",\n") : printer->Print("\n");
   }
 
-  printer->Outdent();
-  printer->Print("]\n\n");
-
-  printer->Print("r.pushTagMap(tagMap)\n\n");
+  printer->Print("\n");
+  printer->Print("r.pushTagMap(tagMap);\n\n");
 
   for (int i = 0; i < message->field_count(); ++i) {
     const google::protobuf::FieldDescriptor *field = message->field(i);
 
     string default_value = DefaultValueForField(field);
 
-    printer->Print("var $name$: $type$ = $default_value$\n",
-                   "name", field->camelcase_name(),
+    printer->Print("$type$ $name$ = $default_value$;\n",
                    "type", AndroidTypeForField(field, false),
+                   "name", field->camelcase_name(),
                    "default_value", default_value);
   }
   printer->Print("\n");
-
-  printer->Print("loop: while true {\n");
+  printer->Print("boolean continueLoop = true;\n");
+  printer->Print("while (continueLoop) {\n");
   printer->Indent();
   printer->Print("switch r.readTag() {\n");
   for (int i = 0; i < message->field_count(); ++i) {
@@ -448,19 +443,19 @@ void CodeGenerator::GenMessage_fromReader(
     if (field->type() == google::protobuf::FieldDescriptor::TYPE_MESSAGE) {
       string type = field->message_type()->full_name();
 
-      printer->Print("var limit = r.pushLimit(r.readVarInt())\n");
+      printer->Print("int limit = r.pushLimit(r.readVarInt());\n");
 
       if (field->is_repeated()) {
-        printer->Print("$name$.append($type$.fromReader(r))\n",
+        printer->Print("$name$.append($type$.fromReader(r));\n",
                        "type", type,
                        "name", name);
       } else {
-        printer->Print("$name$ = $type$.fromReader(r)\n",
+        printer->Print("$name$ = $type$.fromReader(r);\n",
                        "type", type,
                        "name", name);
       }
 
-      printer->Print("r.popLimit(limit)\n");
+      printer->Print("r.popLimit(limit);\n");
     } else if (field->type() == google::protobuf::FieldDescriptor::TYPE_ENUM) {
       string type = field->enum_type()->name();
       if (field->is_repeated()) {
@@ -491,16 +486,16 @@ void CodeGenerator::GenMessage_fromReader(
       }
 
       if (field->is_repeated()) {
-        printer->Print("$name$.append(r.$read_func$())\n",
+        printer->Print("$name$.append(r.$read_func$());\n",
                        "read_func",read_func,
                        "name", name);
       } else {
-        printer->Print("$name$ = r.$read_func$()\n",
+        printer->Print("$name$ = r.$read_func$();\n",
                        "read_func",read_func,
                        "name", name);
       }
     }
-
+    printer->Print("break;\n");
     printer->Outdent();
   }
   printer->Print("default:\n");
@@ -512,32 +507,27 @@ void CodeGenerator::GenMessage_fromReader(
   printer->Outdent();
   printer->Print("}\n\n");
 
-  printer->Print("r.popTagMap()\n");
+  printer->Print("r.popTagMap();\n");
 
   printer->Print("\n");
-  printer->Print("let sizeInBytes = $name$.sizeOf(",
+  printer->Print("int sizeInBytes = $name$.sizeOf(",
                   "name", message->name());
   for (int i = 0, lastI = message->field_count() - 1; i <= lastI; ++i) {
     const google::protobuf::FieldDescriptor *field = message->field(i);
-    if(i == 0){
-      printer->Print("$name$",
+    printer->Print("$name$",
                    "name", field->camelcase_name());
-    } else {
-      printer->Print("$name$: $name$",
-                     "name", field->camelcase_name());
-    }
     if (i != lastI) {
       printer->Print(", ");
     }
   }
   printer->Print(")\n");
 
-  printer->Print("return $name$(sizeInBytes: sizeInBytes",
+  printer->Print("return $name$(sizeInBytes",
                   "name", message->name());
   for (int i = 0, lastI = message->field_count() - 1; i <= lastI; ++i) {
     printer->Print(", ");
     const google::protobuf::FieldDescriptor *field = message->field(i);
-    printer->Print("$name$: $name$",
+    printer->Print("$name$",
                    "name", field->camelcase_name());
   }
   printer->Print(")\n");
