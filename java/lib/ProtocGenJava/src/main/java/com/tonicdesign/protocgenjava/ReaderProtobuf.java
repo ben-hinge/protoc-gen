@@ -84,19 +84,20 @@ implements
         StringBuilder s = new StringBuilder();
         long l = readVarInt();
         while (l > 0) {
-            int c = (int) readByte();
+            int c = readByte() & 0xFF;
             int v = c >> 4;
-            if (v > 13) {
+
+            if (v > 0x0D) {
                 c = (((c & 0x0F) << 12) | ((readByte() & 0x3F) << 6) | (readByte() & 0x3F));
                 l -= 3;
-            } else if (v > 8) {
+            } else if (v > 0x08) {
                 c = (((c & 0x1F) << 6) | (readByte() & 0x3F));
                 l -= 2;
             } else {
                 l -= 1;
             }
 
-            s.append((char)c);
+            s.append((char) c);
         }
         return s.toString();
     }
