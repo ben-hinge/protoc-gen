@@ -411,7 +411,7 @@ void CodeGenerator::GenMessage_fromReader(
                     "tag", tag,
                     "repeated", isRepeated);
 
-    i != message->field_count() - 1 ? printer->Print(",\n") : printer->Print("\n");
+    printer->Print("\n");
   }
 
   printer->Print("\n");
@@ -431,7 +431,7 @@ void CodeGenerator::GenMessage_fromReader(
   printer->Print("boolean continueLoop = true;\n");
   printer->Print("while (continueLoop) {\n");
   printer->Indent();
-  printer->Print("switch r.readTag() {\n");
+  printer->Print("switch (r.readTag()) {\n");
   for (int i = 0; i < message->field_count(); ++i) {
     const google::protobuf::FieldDescriptor *field = message->field(i);
 
@@ -503,7 +503,7 @@ void CodeGenerator::GenMessage_fromReader(
   }
   printer->Print("default:\n");
   printer->Indent();
-  printer->Print("break loop\n");
+  printer->Print("break loop;\n");
   printer->Outdent();
   //
   printer->Print("}\n");
@@ -634,7 +634,7 @@ void CodeGenerator::GenMessageBuilder(
       printer->Print(", ");
     }
   }
-  printer->Print(")\n");
+  printer->Print(");\n");
   printer->Print("return new $name$(sizeInBytes",
                   "name", message->name());
   for (int i = 0, lastI = message->field_count() - 1; i <= lastI; ++i) {
@@ -643,7 +643,7 @@ void CodeGenerator::GenMessageBuilder(
     printer->Print("$name$",
                    "name", field->camelcase_name());
   }
-  printer->Print(")\n");
+  printer->Print(");\n");
 
   printer->Outdent();
   printer->Print("}\n");
@@ -678,7 +678,7 @@ void CodeGenerator::GenMessage_toWriter(
                     "name", name,
                     "repeated", isRepeated);
 
-    i != message->field_count() - 1 ? printer->Print(",\n") : printer->Print("\n");
+    printer->Print("\n");
   }
 
   printer->Print("\n");
@@ -748,7 +748,7 @@ void CodeGenerator::GenMessage_toWriter(
   }
 
   printer->Print("\n");
-  printer->Print("w.popTagMap()\n");
+  printer->Print("w.popTagMap();\n");
 
   printer->Outdent();
   printer->Print("}\n");
@@ -807,7 +807,7 @@ void CodeGenerator::GenMessage_sizeOf(
       printer->Print(", ");
     }
   }
-  printer->Print(") -> Int {\n");
+  printer->Print(") {\n");
   printer->Indent();
   
   printer->Print("int n = 0\n\n");
@@ -836,18 +836,18 @@ void CodeGenerator::GenMessage_sizeOf(
                      "name", name, 
                      "size_of_tag", size_of_tag);
     } else if (field->type() == google::protobuf::FieldDescriptor::TYPE_ENUM) {
-      printer->Print("n += $size_of_tag$ + sizeOfVarInt($name$.rawValue)\n",
+      printer->Print("n += $size_of_tag$ + sizeOfVarInt($name$.rawValue);\n",
                      "name", name, 
                      "size_of_tag", size_of_tag);
     } else if (field->type() == google::protobuf::FieldDescriptor::TYPE_BOOL) {
       printer->Print("n += $size_of_tag$ + 1\n",
                      "size_of_tag", size_of_tag);
     } else if (field->type() == google::protobuf::FieldDescriptor::TYPE_INT32) {
-      printer->Print("n += $size_of_tag$ + sizeOfVarInt($name$)\n",
+      printer->Print("n += $size_of_tag$ + sizeOfVarInt($name$);\n",
                      "size_of_tag", size_of_tag,
                      "name", name);
     } else if (field->type() == google::protobuf::FieldDescriptor::TYPE_INT64) {
-      printer->Print("n += $size_of_tag$ + sizeOfVarInt($name$)\n",
+      printer->Print("n += $size_of_tag$ + sizeOfVarInt($name$);\n",
                      "size_of_tag", size_of_tag,
                      "name", name);
     } else if (field->type() == google::protobuf::FieldDescriptor::TYPE_FLOAT) {
@@ -857,7 +857,7 @@ void CodeGenerator::GenMessage_sizeOf(
       printer->Print("n += $size_of_tag$ + 8\n",
                      "size_of_tag", size_of_tag);
     } else if (field->type() == google::protobuf::FieldDescriptor::TYPE_STRING) {
-      printer->Print("n += $size_of_tag$ + sizeOfString($name$)\n",
+      printer->Print("n += $size_of_tag$ + sizeOfString($name$);\n",
                      "size_of_tag", size_of_tag,
                      "name", name);
     } else {
@@ -871,7 +871,7 @@ void CodeGenerator::GenMessage_sizeOf(
   }
 
   printer->Print("\n"
-                 "return n\n");
+                 "return n;\n");
 
   printer->Outdent();
   printer->Print("}\n");
