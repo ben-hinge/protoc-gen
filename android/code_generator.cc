@@ -756,11 +756,11 @@ void CodeGenerator::GenMessage_sizeOf(
     const google::protobuf::Descriptor *message,
     google::protobuf::io::Printer *printer) 
 {
-  printer->Print("class func sizeOf(",
+  printer->Print("static int sizeOf(",
                  "name", message->name());
   for (int i = 0, lastI = message->field_count() - 1; i <= lastI; ++i) {
     const google::protobuf::FieldDescriptor *field = message->field(i);
-    printer->Print("$name$: $type$",
+    printer->Print("$type$ $name$",
                    "name", field->camelcase_name(),
                    "type", AndroidTypeForField(field, false));
     if (i != lastI) {
@@ -770,19 +770,19 @@ void CodeGenerator::GenMessage_sizeOf(
   printer->Print(") -> Int {\n");
   printer->Indent();
   
-  printer->Print("var n = 0\n\n");
+  printer->Print("int n = 0\n\n");
 
   for (int i = 0; i < message->field_count(); ++i) {
     const google::protobuf::FieldDescriptor *field = message->field(i);
     string name = field->camelcase_name();
 
     if (field->is_optional()) {
-      printer->Print("if let v = $name$ {\n",
+      printer->Print("if (null != $name$) {\n",
                      "name", name);
       printer->Indent();
-      name = "v";
     } else if (field->is_repeated()) {
-      printer->Print("for v in $name$ {\n",
+      printer->Print("for $type$ v : $name$ {\n",
+                     "type", AndroidType(field, false),
                      "name", name);
       printer->Indent();
       name = "v";
@@ -803,11 +803,11 @@ void CodeGenerator::GenMessage_sizeOf(
       printer->Print("n += $size_of_tag$ + 1\n",
                      "size_of_tag", size_of_tag);
     } else if (field->type() == google::protobuf::FieldDescriptor::TYPE_INT32) {
-      printer->Print("n += $size_of_tag$ + sizeOfVarInt(Int($name$))\n",
+      printer->Print("n += $size_of_tag$ + sizeOfVarInt($name$)\n",
                      "size_of_tag", size_of_tag,
                      "name", name);
     } else if (field->type() == google::protobuf::FieldDescriptor::TYPE_INT64) {
-      printer->Print("n += $size_of_tag$ + sizeOfVarInt(Int($name$))\n",
+      printer->Print("n += $size_of_tag$ + sizeOfVarInt($name$)\n",
                      "size_of_tag", size_of_tag,
                      "name", name);
     } else if (field->type() == google::protobuf::FieldDescriptor::TYPE_FLOAT) {
