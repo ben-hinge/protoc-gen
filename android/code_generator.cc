@@ -273,17 +273,17 @@ bool CodeGenerator::Generate(
   printer.Outdent();
   printer.Print("}\n");
 
-  printer.Print("private func sizeOfVarInt(v: Int) -> Int {\n");
+  printer.Print("static int sizeOfVarInt(long v) {\n");
   printer.Indent();
-  printer.Print("var n = 0\n");
-  printer.Print("var x = v\n");
+  printer.Print("int n = 0;\n");
+  printer.Print("long x = v;\n");
   printer.Print("do {\n");
   printer.Indent();
-  printer.Print("x = x >> 7\n");
-  printer.Print("n++\n");
+  printer.Print("x = x >> 7;\n");
+  printer.Print("n++;\n");
   printer.Outdent();
-  printer.Print("} while (x > 0)\n");
-  printer.Print("return n\n");
+  printer.Print("} while (x > 0);\n");
+  printer.Print("return n;\n");
   printer.Outdent();
   printer.Print("}\n");
   printer.Print("\n");
