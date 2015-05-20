@@ -167,10 +167,10 @@ public class ReaderJSONTest {
         mReader.pushTagMap(new HashMap<String, Reader.TagMapValue>() {{
             put(TEST_TAG_JSON_KEY, new Reader.TagMapValue(TEST_TAG, false));
         }});
-        int limit = mReader.pushLimit(0);
+        int limit = mReader.pushLimit(0); // Should be a NO OP
         assertEquals(TEST_TAG, mReader.readTag());
         assertEquals(12.24, mReader.readFloat64(), 0.001);
-        mReader.popLimit(limit);
+        mReader.popLimit(limit); // Should be a NO OP
     }
 
     @Test

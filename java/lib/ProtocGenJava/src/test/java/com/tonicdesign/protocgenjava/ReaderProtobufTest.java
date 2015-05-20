@@ -94,8 +94,8 @@ public class ReaderProtobufTest {
     public void testTagMap() throws Exception {
         byte testByte = 0x01 << 3 | 0x02;
         ReaderProtobuf readerProtobuf = ReaderProtobuf.fromBuffer(new byte[]{testByte});
-        readerProtobuf.pushTagMap(new HashMap<String, Reader.TagMapValue>());
+        readerProtobuf.pushTagMap(new HashMap<String, Reader.TagMapValue>()); // Should be a NO OP
         assertEquals(testByte, readerProtobuf.readByte());
-        readerProtobuf.popTagMap();
+        readerProtobuf.popTagMap(); // Should be a NO OP
     }
 }
