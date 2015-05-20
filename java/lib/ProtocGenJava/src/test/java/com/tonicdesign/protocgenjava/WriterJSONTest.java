@@ -7,6 +7,7 @@ import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.HashMap;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertTrue;
 
 public class WriterJSONTest {
@@ -101,6 +102,16 @@ public class WriterJSONTest {
         mWriter.writeBool(true);
         mWriter.popTagMap();
         assertTrue(Arrays.equals(bytesFromJSON("{\"testTag\":{\"testTagNested\":true}}"), mWriter.toBuffer()));
+    }
+
+    @Test
+    public void testInvalidKey() throws Exception {
+        mWriter.pushTagMap(new HashMap<Integer, Writer.TagMapValue>() {{
+            put(TEST_TAG, new Writer.TagMapValue(null, false));
+        }});
+        mWriter.writeTag(TEST_TAG);
+        mWriter.writeBool(true);
+        assertArrayEquals(bytesFromJSON("{}"), mWriter.toBuffer());
     }
 
     private byte[] bytesFromJSON(String json) {
