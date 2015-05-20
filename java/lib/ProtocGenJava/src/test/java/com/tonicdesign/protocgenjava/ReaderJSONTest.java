@@ -139,7 +139,7 @@ public class ReaderJSONTest {
     @Test
     public void testLimit() throws Exception {
         Reader reader = getReader("{\"testTag\": 12.24}", TAG_MAP);
-        int limit = reader.pushLimit(0); // Should be a NO OP
+        long limit = reader.pushLimit(0); // Should be a NO OP
         assertEquals(TEST_TAG, reader.readTag());
         assertEquals(12.24, reader.readFloat64(), 0.001);
         reader.popLimit(limit); // Should be a NO OP

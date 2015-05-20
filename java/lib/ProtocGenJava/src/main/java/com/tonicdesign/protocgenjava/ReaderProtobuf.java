@@ -7,7 +7,7 @@ implements
     Reader {
 
     private final byte[] mBytes;
-    private int mLimit;
+    private long mLimit;
     private int mOffset;
 
     public static ReaderProtobuf fromBuffer(byte[] bytes) {
@@ -102,13 +102,13 @@ implements
         return s.toString();
     }
 
-    public int pushLimit(int limit) {
-        int oldLimit = mLimit;
+    public long pushLimit(long limit) {
+        long oldLimit = mLimit;
         mLimit = mOffset + limit;
         return oldLimit;
     }
 
-    public void popLimit(int limit) {
+    public void popLimit(long limit) {
         mLimit = limit;
     }
 

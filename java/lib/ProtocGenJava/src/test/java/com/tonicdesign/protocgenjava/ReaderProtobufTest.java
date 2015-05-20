@@ -84,7 +84,7 @@ public class ReaderProtobufTest {
         byte testByte2 = 0x05 << 3 | 0x04;
         ReaderProtobuf readerProtobuf = ReaderProtobuf.fromBuffer(new byte[]{testByte1, testByte2});
         assertEquals(testByte1, readerProtobuf.readByte());
-        int limit = readerProtobuf.pushLimit(0);
+        long limit = readerProtobuf.pushLimit(0);
         assertEquals(0, readerProtobuf.readByte());
         readerProtobuf.popLimit(limit);
         assertEquals(testByte2, readerProtobuf.readByte());

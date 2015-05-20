@@ -151,11 +151,11 @@ implements
         return "";
     }
 
-    public int pushLimit(int limit) {
+    public long pushLimit(long limit) {
         return 0; // Nothing
     }
 
-    public void popLimit(int limit) {
+    public void popLimit(long limit) {
         // Nothing
     }
 

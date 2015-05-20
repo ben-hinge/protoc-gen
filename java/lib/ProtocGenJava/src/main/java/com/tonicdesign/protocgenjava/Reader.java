@@ -25,8 +25,8 @@ public interface Reader {
     float readFloat32();
     double readFloat64();
     String readString();
-    int pushLimit(int limit);
-    void popLimit(int limit);
+    long pushLimit(long limit);
+    void popLimit(long limit);
     void pushTagMap(Map<String, TagMapValue> map);
     void popTagMap();
 }
