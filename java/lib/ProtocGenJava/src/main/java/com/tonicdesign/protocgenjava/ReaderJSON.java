@@ -90,9 +90,8 @@ implements
     }
 
     public byte readByte() {
-        if (mObject instanceof Integer) {
-            int readByte = (Integer) mObject;
-            return (byte) (readByte & 0xFF);
+        if (mObject instanceof Number) {
+            return ((Number) mObject).byteValue();
         }
         return 0;
     }
@@ -102,8 +101,8 @@ implements
     }
 
     public long readVarUInt() {
-        if (mObject instanceof Long) {
-            return (Long) mObject;
+        if (mObject instanceof Number) {
+            return ((Number) mObject).longValue();
         }
         return 0;
     }
@@ -116,28 +115,29 @@ implements
     }
 
     public int readUInt32() {
-        if (mObject instanceof Integer) {
-            return (Integer) mObject;
+        if (mObject instanceof Number) {
+            return ((Number) mObject).intValue();
         }
         return 0;
     }
 
     public long readUInt64() {
-        if (mObject instanceof Long) {
-            return (Long) mObject;
-        } else if (mObject instanceof Integer) {
-            return (Integer) mObject;
+        if (mObject instanceof Number) {
+            return ((Number) mObject).longValue();
         }
         return 0;
     }
 
     public float readFloat32() {
-        return (float) readFloat64();
+        if (mObject instanceof Number) {
+            return ((Number) mObject).floatValue();
+        }
+        return 0;
     }
 
     public double readFloat64() {
-        if (mObject instanceof Double) {
-            return (Double) mObject;
+        if (mObject instanceof Number) {
+            return ((Number) mObject).doubleValue();
         }
         return 0;
     }
