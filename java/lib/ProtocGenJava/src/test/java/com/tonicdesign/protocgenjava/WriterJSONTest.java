@@ -4,11 +4,9 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.nio.charset.Charset;
-import java.util.Arrays;
 import java.util.HashMap;
 
 import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertTrue;
 
 public class WriterJSONTest {
 
@@ -34,49 +32,49 @@ public class WriterJSONTest {
     public void testWriteByte() throws Exception {
         mWriter.writeTag(TEST_TAG);
         mWriter.writeByte((byte) 0xFA);
-        assertTrue(Arrays.equals(bytesFromJSON("{\"testTag\":250}"), mWriter.toBuffer()));
+        assertArrayEquals(bytesFromJSON("{\"testTag\":250}"), mWriter.toBuffer());
     }
 
     @Test
     public void testWriteVarInt64Bits() throws Exception {
         mWriter.writeTag(TEST_TAG);
         mWriter.writeVarInt(2886807498600235012L);
-        assertTrue(Arrays.equals(bytesFromJSON("{\"testTag\":2886807498600235012}"), mWriter.toBuffer()));
+        assertArrayEquals(bytesFromJSON("{\"testTag\":2886807498600235012}"), mWriter.toBuffer());
     }
 
     @Test
     public void testWriteVarUInt64Bits() throws Exception {
         mWriter.writeTag(TEST_TAG);
         mWriter.writeVarUInt(2886807498600235012L);
-        assertTrue(Arrays.equals(bytesFromJSON("{\"testTag\":2886807498600235012}"), mWriter.toBuffer()));
+        assertArrayEquals(bytesFromJSON("{\"testTag\":2886807498600235012}"), mWriter.toBuffer());
     }
 
     @Test
     public void testWriteBool() throws Exception {
         mWriter.writeTag(TEST_TAG);
         mWriter.writeBool(true);
-        assertTrue(Arrays.equals(bytesFromJSON("{\"testTag\":true}"), mWriter.toBuffer()));
+        assertArrayEquals(bytesFromJSON("{\"testTag\":true}"), mWriter.toBuffer());
     }
 
     @Test
     public void testWriteFloat32() throws Exception {
         mWriter.writeTag(TEST_TAG);
         mWriter.writeFloat32(12.24f);
-        assertTrue(Arrays.equals(bytesFromJSON("{\"testTag\":12.24}"), mWriter.toBuffer()));
+        assertArrayEquals(bytesFromJSON("{\"testTag\":12.24}"), mWriter.toBuffer());
     }
 
     @Test
     public void testWriteFloat64() throws Exception {
         mWriter.writeTag(TEST_TAG);
         mWriter.writeFloat64(12.24);
-        assertTrue(Arrays.equals(bytesFromJSON("{\"testTag\":12.24}"), mWriter.toBuffer()));
+        assertArrayEquals(bytesFromJSON("{\"testTag\":12.24}"), mWriter.toBuffer());
     }
 
     @Test
     public void testWriteString() throws Exception {
         mWriter.writeTag(TEST_TAG);
         mWriter.writeString("h\u0121\u221A");
-        assertTrue(Arrays.equals(bytesFromJSON("{\"testTag\":\"h\u0121\u221A\"}"), mWriter.toBuffer()));
+        assertArrayEquals(bytesFromJSON("{\"testTag\":\"h\u0121\u221A\"}"), mWriter.toBuffer());
     }
 
     @Test
@@ -89,7 +87,7 @@ public class WriterJSONTest {
         mWriter.writeString("string3");
         mWriter.writeTag(TEST_TAG_REPEATED);
         mWriter.writeString("string4");
-        assertTrue(Arrays.equals(bytesFromJSON("{\"testTagRepeated\":[\"string1\",\"string2\",\"string3\",\"string4\"]}"), mWriter.toBuffer()));
+        assertArrayEquals(bytesFromJSON("{\"testTagRepeated\":[\"string1\",\"string2\",\"string3\",\"string4\"]}"), mWriter.toBuffer());
     }
 
     @Test
@@ -101,7 +99,7 @@ public class WriterJSONTest {
         mWriter.writeTag(TEST_TAG_NESTED);
         mWriter.writeBool(true);
         mWriter.popTagMap();
-        assertTrue(Arrays.equals(bytesFromJSON("{\"testTag\":{\"testTagNested\":true}}"), mWriter.toBuffer()));
+        assertArrayEquals(bytesFromJSON("{\"testTag\":{\"testTagNested\":true}}"), mWriter.toBuffer());
     }
 
     @Test
