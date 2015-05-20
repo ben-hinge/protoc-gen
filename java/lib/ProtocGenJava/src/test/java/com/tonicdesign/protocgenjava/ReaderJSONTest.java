@@ -174,6 +174,15 @@ public class ReaderJSONTest {
     }
 
     @Test
+    public void testIncorrectTag() throws Exception {
+        mReader = ReaderJSON.fromBuffer(bytesFromJSON("{\"unknownTag\": 12.24}"));
+        mReader.pushTagMap(new HashMap<String, Reader.TagMapValue>() {{
+            put(TEST_TAG_JSON_KEY, new Reader.TagMapValue(TEST_TAG, false));
+        }});
+        assertEquals(0, mReader.readTag());
+    }
+
+    @Test
     public void testIncorrectByteValue() throws Exception {
         mReader = ReaderJSON.fromBuffer(bytesFromJSON("{\"testTag\": true}"));
         mReader.pushTagMap(new HashMap<String, Reader.TagMapValue>() {{
@@ -261,6 +270,15 @@ public class ReaderJSONTest {
         }});
         assertEquals(TEST_TAG, mReader.readTag());
         assertEquals("", mReader.readString());
+    }
+
+    @Test
+    public void testIncorrectRepeatedValue() throws Exception {
+        mReader = ReaderJSON.fromBuffer(bytesFromJSON("{\"testTagRepeated\": true}"));
+        mReader.pushTagMap(new HashMap<String, Reader.TagMapValue>() {{
+            put(TEST_TAG_REPEATED_JSON_KEY, new Reader.TagMapValue(TEST_TAG_REPEATED, true));
+        }});
+        assertEquals(0, mReader.readTag());
     }
 
     private byte[] bytesFromJSON(String json) {

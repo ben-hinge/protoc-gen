@@ -73,14 +73,16 @@ implements
             if (mKeyIterator.hasNext()) {
                 String key = mKeyIterator.next();
                 TagMapValue tagMapValue = mTagMap.get(key);
-                if (tagMapValue.isRepeated) {
-                    JSONArray jsonArray = mJSONObject.getJSONArray(key);
-                    mRepeatedObject = new RepeatedObject(tagMapValue.key, jsonArray);
-                    mObject = mRepeatedObject.next();
-                } else {
-                    mObject = mJSONObject.get(key);
+                if (null != tagMapValue) {
+                    if (tagMapValue.isRepeated) {
+                        JSONArray jsonArray = mJSONObject.getJSONArray(key);
+                        mRepeatedObject = new RepeatedObject(tagMapValue.key, jsonArray);
+                        mObject = mRepeatedObject.next();
+                    } else {
+                        mObject = mJSONObject.get(key);
+                    }
+                    return tagMapValue.key;
                 }
-                return tagMapValue.key;
             }
         } catch (JSONException e) {
 
