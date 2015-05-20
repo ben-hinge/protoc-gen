@@ -167,7 +167,7 @@ string AndroidTypeForField(const google::protobuf::FieldDescriptor* field, bool 
   string type;
   type = AndroidType(field, fully_qualified);
   if (field->is_repeated()) {
-    type = type + "[]";
+    type = "List<" + type +">";
   }
   return type;
 }
@@ -257,6 +257,7 @@ bool CodeGenerator::Generate(
   printer.Print(
       "\n"
       "import java.util.HashMap;\n"
+      "import java.util.List;\n"
       "import java.util.Map;\n"
       "\n");
 
@@ -445,10 +446,10 @@ void CodeGenerator::GenMessage_fromReader(
     if (field->type() == google::protobuf::FieldDescriptor::TYPE_MESSAGE) {
       string type = field->message_type()->full_name();
 
-      printer->Print("int limit = r.pushLimit(r.readVarInt());\n");
+      printer->Print("long limit = r.pushLimit(r.readVarInt());\n");
 
       if (field->is_repeated()) {
-        printer->Print("$name$.append($type$.fromReader(r));\n",
+        printer->Print("$name$.add($type$.fromReader(r));\n",
                        "type", type,
                        "name", name);
       } else {
@@ -461,7 +462,7 @@ void CodeGenerator::GenMessage_fromReader(
     } else if (field->type() == google::protobuf::FieldDescriptor::TYPE_ENUM) {
       string type = field->enum_type()->name();
       if (field->is_repeated()) {
-        printer->Print("$name$.append($type$(rawValue: r.readVarInt())!)\n",
+        printer->Print("$name$.add($type$(rawValue: r.readVarInt())!)\n",
                        "type", type,
                        "name", name);
       } else {
@@ -471,9 +472,11 @@ void CodeGenerator::GenMessage_fromReader(
       }
     } else {
       std::string read_func;
+      std::string cast_func = "";
       if (field->type() == google::protobuf::FieldDescriptor::TYPE_BOOL) {
         read_func = "readBool";
       } else if (field->type() == google::protobuf::FieldDescriptor::TYPE_INT32) {
+        cast_func = "(int)";
         read_func = "readVarInt";
       } else if (field->type() == google::protobuf::FieldDescriptor::TYPE_INT64) {
         read_func = "readVarInt";
@@ -488,11 +491,12 @@ void CodeGenerator::GenMessage_fromReader(
       }
 
       if (field->is_repeated()) {
-        printer->Print("$name$.append(r.$read_func$());\n",
+        printer->Print("$name$.add(r.$read_func$());\n",
                        "read_func",read_func,
                        "name", name);
       } else {
-        printer->Print("$name$ = r.$read_func$();\n",
+        printer->Print("$name$ = $cast_func$r.$read_func$();\n",
+                       "cast_func", cast_func,
                        "read_func",read_func,
                        "name", name);
       }
@@ -759,7 +763,6 @@ void CodeGenerator::GenMessage_equality(
     google::protobuf::io::Printer *printer) 
 {
   string name = message->name();
-  printer->Print("@Overrride\n");
   printer->Print("public boolean equals(Object object) {\n");
   printer->Indent();
 
