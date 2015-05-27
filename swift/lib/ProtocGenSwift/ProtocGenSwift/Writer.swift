@@ -1,7 +1,7 @@
 import Foundation
 
 public protocol Writer {
-    class func withCapacity(capacity: Int) -> Writer?
+    static func withCapacity(capacity: Int) -> Writer?
     func toBuffer() -> NSData
     func writeTag(tag: Int)
     func writeByte(v: UInt8)

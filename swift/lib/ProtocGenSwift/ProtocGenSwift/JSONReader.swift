@@ -16,7 +16,7 @@ public class JSONReader : Reader {
     }
     
     public class func fromBuffer(data: NSData) -> Reader? {
-        var dict: NSDictionary = NSJSONSerialization.JSONObjectWithData(data, options: nil, error: nil)! as NSDictionary
+        var dict: NSDictionary = NSJSONSerialization.JSONObjectWithData(data, options: nil, error: nil)! as! NSDictionary
         return JSONReader(dictionary: dict)
     }
     
@@ -27,9 +27,9 @@ public class JSONReader : Reader {
         }
         
         if let keyValuePair = generator.next() {
-            if let info = tagMap[keyValuePair.key as String] {
+            if let info = tagMap[keyValuePair.key as! String] {
                 if info.1 {
-                    repeatedObject = (key: info.0, generator: (keyValuePair.value as NSArray).generate())
+                    repeatedObject = (key: info.0, generator: (keyValuePair.value as! NSArray).generate())
                     object = repeatedObject?.generator.next()
                 } else {
                     object = keyValuePair.value
@@ -115,7 +115,7 @@ public class JSONReader : Reader {
         if nil != self.tagMap {
             tagMapStack.append(self.tagMap)
             generatorStack.append(generator)
-            generator = (object as NSDictionary).generate()
+            generator = (object as! NSDictionary).generate()
             repeatedObjectStack.append(repeatedObject)
             repeatedObject = nil
         }

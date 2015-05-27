@@ -1,7 +1,7 @@
 import Foundation
 
 public protocol Reader {
-    class func fromBuffer(data: NSData) -> Reader?
+    static func fromBuffer(data: NSData) -> Reader?
     func readTag() -> Int
     func readByte() -> UInt8
     func readVarInt() -> Int
