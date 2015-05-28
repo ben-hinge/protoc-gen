@@ -16,6 +16,15 @@
 		BC17DDB01B04E655003F3DD4 /* ProtobufWriter.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC17DDAD1B04E655003F3DD4 /* ProtobufWriter.swift */; };
 		BC17DDB11B04E655003F3DD4 /* Writer.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC17DDAE1B04E655003F3DD4 /* Writer.swift */; };
 		BC17DDB41B04E72C003F3DD4 /* Test.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC17DDB31B04E72C003F3DD4 /* Test.swift */; };
+		BC9DD48B1B176D0300BB199C /* ProtocGenSwift(OSX).h in Headers */ = {isa = PBXBuildFile; fileRef = BC9DD48A1B176D0300BB199C /* ProtocGenSwift(OSX).h */; settings = {ATTRIBUTES = (Public, ); }; };
+		BC9DD4911B176D0300BB199C /* ProtocGenSwift.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BC9DD4861B176D0300BB199C /* ProtocGenSwift.framework */; };
+		BC9DD4981B176D0300BB199C /* ProtocGenSwift_OSX_Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC9DD4971B176D0300BB199C /* ProtocGenSwift_OSX_Tests.swift */; };
+		BC9DD49F1B176D2100BB199C /* Writer.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC17DDAE1B04E655003F3DD4 /* Writer.swift */; };
+		BC9DD4A01B176D2300BB199C /* JSONWriter.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC17DDAC1B04E655003F3DD4 /* JSONWriter.swift */; };
+		BC9DD4A11B176D2500BB199C /* ProtobufWriter.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC17DDAD1B04E655003F3DD4 /* ProtobufWriter.swift */; };
+		BC9DD4A21B176D2700BB199C /* Reader.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC17DDA71B04E641003F3DD4 /* Reader.swift */; };
+		BC9DD4A31B176D2A00BB199C /* JSONReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC17DDA51B04E641003F3DD4 /* JSONReader.swift */; };
+		BC9DD4A41B176D2D00BB199C /* ProtobufReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC17DDA61B04E641003F3DD4 /* ProtobufReader.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -25,6 +34,13 @@
 			proxyType = 1;
 			remoteGlobalIDString = BC17DD871B04E609003F3DD4;
 			remoteInfo = ProtocGenSwift;
+		};
+		BC9DD4921B176D0300BB199C /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = BC17DD7F1B04E609003F3DD4 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = BC9DD4851B176D0300BB199C;
+			remoteInfo = "ProtocGenSwift(OSX)";
 		};
 /* End PBXContainerItemProxy section */
 
@@ -41,6 +57,12 @@
 		BC17DDAD1B04E655003F3DD4 /* ProtobufWriter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ProtobufWriter.swift; sourceTree = "<group>"; };
 		BC17DDAE1B04E655003F3DD4 /* Writer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Writer.swift; sourceTree = "<group>"; };
 		BC17DDB31B04E72C003F3DD4 /* Test.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Test.swift; sourceTree = "<group>"; };
+		BC9DD4861B176D0300BB199C /* ProtocGenSwift.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = ProtocGenSwift.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		BC9DD4891B176D0300BB199C /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		BC9DD48A1B176D0300BB199C /* ProtocGenSwift(OSX).h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "ProtocGenSwift(OSX).h"; sourceTree = "<group>"; };
+		BC9DD4901B176D0300BB199C /* ProtocGenSwiftTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ProtocGenSwiftTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		BC9DD4961B176D0300BB199C /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		BC9DD4971B176D0300BB199C /* ProtocGenSwift_OSX_Tests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProtocGenSwift_OSX_Tests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -59,6 +81,21 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		BC9DD4821B176D0300BB199C /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		BC9DD48D1B176D0300BB199C /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				BC9DD4911B176D0300BB199C /* ProtocGenSwift.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -67,6 +104,8 @@
 			children = (
 				BC17DD8A1B04E609003F3DD4 /* ProtocGenSwift */,
 				BC17DD971B04E609003F3DD4 /* ProtocGenSwiftTests */,
+				BC9DD4871B176D0300BB199C /* ProtocGenSwift(OSX) */,
+				BC9DD4941B176D0300BB199C /* ProtocGenSwift(OSX)Tests */,
 				BC17DD891B04E609003F3DD4 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -76,6 +115,8 @@
 			children = (
 				BC17DD881B04E609003F3DD4 /* ProtocGenSwift.framework */,
 				BC17DD931B04E609003F3DD4 /* ProtocGenSwiftTests.xctest */,
+				BC9DD4861B176D0300BB199C /* ProtocGenSwift.framework */,
+				BC9DD4901B176D0300BB199C /* ProtocGenSwiftTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -144,6 +185,40 @@
 			name = Generated;
 			sourceTree = "<group>";
 		};
+		BC9DD4871B176D0300BB199C /* ProtocGenSwift(OSX) */ = {
+			isa = PBXGroup;
+			children = (
+				BC9DD48A1B176D0300BB199C /* ProtocGenSwift(OSX).h */,
+				BC9DD4881B176D0300BB199C /* Supporting Files */,
+			);
+			path = "ProtocGenSwift(OSX)";
+			sourceTree = "<group>";
+		};
+		BC9DD4881B176D0300BB199C /* Supporting Files */ = {
+			isa = PBXGroup;
+			children = (
+				BC9DD4891B176D0300BB199C /* Info.plist */,
+			);
+			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+		BC9DD4941B176D0300BB199C /* ProtocGenSwift(OSX)Tests */ = {
+			isa = PBXGroup;
+			children = (
+				BC9DD4971B176D0300BB199C /* ProtocGenSwift_OSX_Tests.swift */,
+				BC9DD4951B176D0300BB199C /* Supporting Files */,
+			);
+			path = "ProtocGenSwift(OSX)Tests";
+			sourceTree = "<group>";
+		};
+		BC9DD4951B176D0300BB199C /* Supporting Files */ = {
+			isa = PBXGroup;
+			children = (
+				BC9DD4961B176D0300BB199C /* Info.plist */,
+			);
+			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXHeadersBuildPhase section */
@@ -151,6 +226,14 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		BC9DD4831B176D0300BB199C /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				BC9DD48B1B176D0300BB199C /* ProtocGenSwift(OSX).h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -193,6 +276,42 @@
 			productReference = BC17DD931B04E609003F3DD4 /* ProtocGenSwiftTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
+		BC9DD4851B176D0300BB199C /* ProtocGenSwift(OSX) */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = BC9DD4991B176D0300BB199C /* Build configuration list for PBXNativeTarget "ProtocGenSwift(OSX)" */;
+			buildPhases = (
+				BC9DD4811B176D0300BB199C /* Sources */,
+				BC9DD4821B176D0300BB199C /* Frameworks */,
+				BC9DD4831B176D0300BB199C /* Headers */,
+				BC9DD4841B176D0300BB199C /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "ProtocGenSwift(OSX)";
+			productName = "ProtocGenSwift(OSX)";
+			productReference = BC9DD4861B176D0300BB199C /* ProtocGenSwift.framework */;
+			productType = "com.apple.product-type.framework";
+		};
+		BC9DD48F1B176D0300BB199C /* ProtocGenSwift(OSX)Tests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = BC9DD49C1B176D0300BB199C /* Build configuration list for PBXNativeTarget "ProtocGenSwift(OSX)Tests" */;
+			buildPhases = (
+				BC9DD48C1B176D0300BB199C /* Sources */,
+				BC9DD48D1B176D0300BB199C /* Frameworks */,
+				BC9DD48E1B176D0300BB199C /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				BC9DD4931B176D0300BB199C /* PBXTargetDependency */,
+			);
+			name = "ProtocGenSwift(OSX)Tests";
+			productName = "ProtocGenSwift(OSX)Tests";
+			productReference = BC9DD4901B176D0300BB199C /* ProtocGenSwiftTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -207,6 +326,12 @@
 					};
 					BC17DD921B04E609003F3DD4 = {
 						CreatedOnToolsVersion = 6.2;
+					};
+					BC9DD4851B176D0300BB199C = {
+						CreatedOnToolsVersion = 6.3.2;
+					};
+					BC9DD48F1B176D0300BB199C = {
+						CreatedOnToolsVersion = 6.3.2;
 					};
 				};
 			};
@@ -224,6 +349,8 @@
 			targets = (
 				BC17DD871B04E609003F3DD4 /* ProtocGenSwift */,
 				BC17DD921B04E609003F3DD4 /* ProtocGenSwiftTests */,
+				BC9DD4851B176D0300BB199C /* ProtocGenSwift(OSX) */,
+				BC9DD48F1B176D0300BB199C /* ProtocGenSwift(OSX)Tests */,
 			);
 		};
 /* End PBXProject section */
@@ -237,6 +364,20 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		BC17DD911B04E609003F3DD4 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		BC9DD4841B176D0300BB199C /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		BC9DD48E1B176D0300BB199C /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -268,6 +409,27 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		BC9DD4811B176D0300BB199C /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				BC9DD49F1B176D2100BB199C /* Writer.swift in Sources */,
+				BC9DD4A01B176D2300BB199C /* JSONWriter.swift in Sources */,
+				BC9DD4A11B176D2500BB199C /* ProtobufWriter.swift in Sources */,
+				BC9DD4A21B176D2700BB199C /* Reader.swift in Sources */,
+				BC9DD4A31B176D2A00BB199C /* JSONReader.swift in Sources */,
+				BC9DD4A41B176D2D00BB199C /* ProtobufReader.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		BC9DD48C1B176D0300BB199C /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				BC9DD4981B176D0300BB199C /* ProtocGenSwift_OSX_Tests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -275,6 +437,11 @@
 			isa = PBXTargetDependency;
 			target = BC17DD871B04E609003F3DD4 /* ProtocGenSwift */;
 			targetProxy = BC17DD951B04E609003F3DD4 /* PBXContainerItemProxy */;
+		};
+		BC9DD4931B176D0300BB199C /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = BC9DD4851B176D0300BB199C /* ProtocGenSwift(OSX) */;
+			targetProxy = BC9DD4921B176D0300BB199C /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -427,6 +594,92 @@
 			};
 			name = Release;
 		};
+		BC9DD49A1B176D0300BB199C /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEFINES_MODULE = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				FRAMEWORK_VERSION = A;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				INFOPLIST_FILE = "ProtocGenSwift(OSX)/Info.plist";
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 10.10;
+				PRODUCT_NAME = ProtocGenSwift;
+				SDKROOT = macosx;
+				SKIP_INSTALL = YES;
+			};
+			name = Debug;
+		};
+		BC9DD49B1B176D0300BB199C /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEFINES_MODULE = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				FRAMEWORK_VERSION = A;
+				GCC_NO_COMMON_BLOCKS = YES;
+				INFOPLIST_FILE = "ProtocGenSwift(OSX)/Info.plist";
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 10.10;
+				PRODUCT_NAME = ProtocGenSwift;
+				SDKROOT = macosx;
+				SKIP_INSTALL = YES;
+			};
+			name = Release;
+		};
+		BC9DD49D1B176D0300BB199C /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(DEVELOPER_FRAMEWORKS_DIR)",
+					"$(inherited)",
+				);
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				INFOPLIST_FILE = "ProtocGenSwift(OSX)Tests/Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 10.10;
+				PRODUCT_NAME = ProtocGenSwiftTests;
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		BC9DD49E1B176D0300BB199C /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(DEVELOPER_FRAMEWORKS_DIR)",
+					"$(inherited)",
+				);
+				GCC_NO_COMMON_BLOCKS = YES;
+				INFOPLIST_FILE = "ProtocGenSwift(OSX)Tests/Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 10.10;
+				PRODUCT_NAME = ProtocGenSwiftTests;
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -456,6 +709,22 @@
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
+		};
+		BC9DD4991B176D0300BB199C /* Build configuration list for PBXNativeTarget "ProtocGenSwift(OSX)" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				BC9DD49A1B176D0300BB199C /* Debug */,
+				BC9DD49B1B176D0300BB199C /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+		};
+		BC9DD49C1B176D0300BB199C /* Build configuration list for PBXNativeTarget "ProtocGenSwift(OSX)Tests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				BC9DD49D1B176D0300BB199C /* Debug */,
+				BC9DD49E1B176D0300BB199C /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
 		};
 /* End XCConfigurationList section */
 	};
