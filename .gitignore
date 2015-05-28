@@ -1,4 +1,3 @@
 *.swp
 protoc-gen-*
-test.*
 *.pb.*
