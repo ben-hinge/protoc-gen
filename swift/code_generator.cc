@@ -1,19 +1,3 @@
-// Copyright (c) 2010-2011 SameGoal LLC.
-// All Rights Reserved.
-// Author: Andy Hochhaus <ahochhaus@samegoal.com>
-
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
 #include "code_generator.h"
 
 #include <string>
@@ -307,7 +291,7 @@ void CodeGenerator::GenDescriptor(
     const google::protobuf::Descriptor *message,
     google::protobuf::io::Printer *printer) 
 {
-  printer->Print("public class $name$: Equatable {\n",
+  printer->Print("public class $name$: Equatable, Message {\n",
                  "name", message->name());
   printer->Indent();
   printer->Print("public let sizeInBytes: Int\n");
@@ -412,7 +396,7 @@ void CodeGenerator::GenMessage_fromReader(
     const google::protobuf::Descriptor *message,
     google::protobuf::io::Printer *printer) 
 {
-  printer->Print("public class func fromReader(r: Reader) -> $name$ {\n",
+  printer->Print("public class func fromReader(r: Reader) -> Self {\n",
                  "name", message->name());
   printer->Indent();
 
@@ -574,7 +558,7 @@ void CodeGenerator::GenMessage_builder(
     const google::protobuf::Descriptor *message,
     google::protobuf::io::Printer *printer) 
 {
-  printer->Print("public class func builder() -> $name$Builder {\n",
+  printer->Print("public class func builder() -> MessageBuilder {\n",
                  "name", message->name());
   printer->Indent();
   printer->Print("return $name$Builder()\n",
@@ -588,7 +572,7 @@ void CodeGenerator::GenMessageBuilder(
     google::protobuf::io::Printer *printer) 
 {
   std::string builder_name = message->name() + "Builder";
-  printer->Print("public class $builder$ {\n",
+  printer->Print("public class $builder$: MessageBuilder {\n",
                  "builder", builder_name);
   printer->Indent();
   for (int i = 0; i < message->field_count(); ++i) {
@@ -647,7 +631,7 @@ void CodeGenerator::GenMessageBuilder(
     printer->Print("}\n\n");
   }
 
-  printer->Print("public func build() -> $type$ {\n",
+  printer->Print("public func build() -> Message {\n",
                  "type", message->name());
   printer->Indent();
 

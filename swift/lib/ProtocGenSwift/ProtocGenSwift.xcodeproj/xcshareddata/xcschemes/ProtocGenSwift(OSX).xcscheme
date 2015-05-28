@@ -15,7 +15,7 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "BC9DD4851B176D0300BB199C"
-               BuildableName = "ProtocGenSwift(OSX).framework"
+               BuildableName = "ProtocGenSwift.framework"
                BlueprintName = "ProtocGenSwift(OSX)"
                ReferencedContainer = "container:ProtocGenSwift.xcodeproj">
             </BuildableReference>
@@ -29,7 +29,7 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "BC9DD48F1B176D0300BB199C"
-               BuildableName = "ProtocGenSwift(OSX)Tests.xctest"
+               BuildableName = "ProtocGenSwiftTests.xctest"
                BlueprintName = "ProtocGenSwift(OSX)Tests"
                ReferencedContainer = "container:ProtocGenSwift.xcodeproj">
             </BuildableReference>
@@ -47,7 +47,7 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "BC9DD48F1B176D0300BB199C"
-               BuildableName = "ProtocGenSwift(OSX)Tests.xctest"
+               BuildableName = "ProtocGenSwiftTests.xctest"
                BlueprintName = "ProtocGenSwift(OSX)Tests"
                ReferencedContainer = "container:ProtocGenSwift.xcodeproj">
             </BuildableReference>
@@ -57,7 +57,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "BC9DD4851B176D0300BB199C"
-            BuildableName = "ProtocGenSwift(OSX).framework"
+            BuildableName = "ProtocGenSwift.framework"
             BlueprintName = "ProtocGenSwift(OSX)"
             ReferencedContainer = "container:ProtocGenSwift.xcodeproj">
          </BuildableReference>
@@ -76,7 +76,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "BC9DD4851B176D0300BB199C"
-            BuildableName = "ProtocGenSwift(OSX).framework"
+            BuildableName = "ProtocGenSwift.framework"
             BlueprintName = "ProtocGenSwift(OSX)"
             ReferencedContainer = "container:ProtocGenSwift.xcodeproj">
          </BuildableReference>
@@ -94,7 +94,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "BC9DD4851B176D0300BB199C"
-            BuildableName = "ProtocGenSwift(OSX).framework"
+            BuildableName = "ProtocGenSwift.framework"
             BlueprintName = "ProtocGenSwift(OSX)"
             ReferencedContainer = "container:ProtocGenSwift.xcodeproj">
          </BuildableReference>
