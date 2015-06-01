@@ -30,7 +30,7 @@ public func ==(a: DemoMessage.DemoNestedMessage, b: DemoMessage.DemoNestedMessag
     )
 }
 
-public class DemoMessage: Equatable, Message {
+public class DemoMessage: AbstractMessage, Equatable {
     public let sizeInBytes: Int
     public let demoDouble: Float64?
     public let demoInt32: Int?
@@ -40,6 +40,10 @@ public class DemoMessage: Equatable, Message {
     public let demoNestedMessage: DemoNestedMessage?
     public let demoRepeated: [String]
     public let demoRepeatedNestedMessage: [DemoNestedMessage]!
+    
+    required public init() {
+        fatalError("init() not valid consrtuctor")
+    }
     
     init(sizeInBytes: Int, demoDouble: Float64?, demoInt32: Int?, demoInt64: Int?, demoBool: Bool?, demoString: String?, demoNestedMessage: DemoNestedMessage?, demoRepeated: [String], demoRepeatedNestedMessage: [DemoNestedMessage]!) {
         self.sizeInBytes = sizeInBytes
@@ -51,9 +55,14 @@ public class DemoMessage: Equatable, Message {
         self.demoNestedMessage = demoNestedMessage
         self.demoRepeated = demoRepeated
         self.demoRepeatedNestedMessage = demoRepeatedNestedMessage
+        super.init()
     }
     
-    public func toWriter(w: Writer) {
+    public override func serializedSize() -> Int {
+        return self.sizeInBytes
+    }
+    
+    public override func toWriter(w: Writer) {
         var tagMap: [Int:(String, Bool)] = [
             9 : ("demoDouble", false),
             16 : ("demoInt32", false),
@@ -112,7 +121,7 @@ public class DemoMessage: Equatable, Message {
         w.popTagMap()
     }
     
-    public class func fromReader(r: Reader) -> Self {
+    public class func fromReader(r: Reader) -> DemoMessage {
         var tagMap: [String:(Int, Bool)] = [
             "demoDouble" : (9, false),
             "demoInt32" : (16, false),
@@ -199,11 +208,11 @@ public class DemoMessage: Equatable, Message {
         return n
     }
     
-    public class func builder() -> MessageBuilder {
+    public class func builder() -> DemoMessageBuilder {
         return DemoMessageBuilder()
     }
     
-    public class DemoNestedMessage: Equatable, Message {
+    public class DemoNestedMessage: AbstractMessage, Equatable {
         public let sizeInBytes: Int
         public let nestedString: String?
         public let nestedInt32: Int?
@@ -214,7 +223,15 @@ public class DemoMessage: Equatable, Message {
             self.nestedInt32 = nestedInt32
         }
         
-        public func toWriter(w: Writer) {
+        required public init() {
+            fatalError("init() not valid consrtuctor")
+        }
+        
+        public override func serializedSize() -> Int {
+            return self.sizeInBytes
+        }
+
+        public override func toWriter(w: Writer) {
             var tagMap: [Int:(String, Bool)] = [
                 10 : ("nestedString", false),
                 16 : ("nestedInt32", false)
@@ -235,7 +252,7 @@ public class DemoMessage: Equatable, Message {
             w.popTagMap()
         }
         
-        public class func fromReader(r: Reader) -> Self {
+        public class func fromReader(r: Reader) -> DemoNestedMessage {
             var tagMap: [String:(Int, Bool)] = [
                 "nestedString" : (10, false),
                 "nestedInt32" : (16, false)
@@ -276,17 +293,21 @@ public class DemoMessage: Equatable, Message {
             return n
         }
         
-        public class func builder() -> MessageBuilder {
+        public class func builder() -> DemoNestedMessageBuilder {
             return DemoNestedMessageBuilder()
         }
         
     }
     
-    public class DemoNestedMessageBuilder: MessageBuilder {
+    public class DemoNestedMessageBuilder: AbstractMessageBuilder {
         var nestedString: String? = nil
         var nestedInt32: Int? = nil
         
-        public func clear() -> Self {
+        required public init() {
+            super.init()
+        }
+        
+        public override func clear() -> Self {
             self.nestedString = nil
             self.nestedInt32 = nil
             return self
@@ -312,7 +333,7 @@ public class DemoMessage: Equatable, Message {
             return self
         }
         
-        public func build() -> Message {
+        public override func build() -> DemoNestedMessage {
             let sizeInBytes = DemoNestedMessage.sizeOf(nestedString, nestedInt32: nestedInt32)
             return DemoNestedMessage(sizeInBytes: sizeInBytes, nestedString: nestedString, nestedInt32: nestedInt32)
         }
@@ -321,7 +342,7 @@ public class DemoMessage: Equatable, Message {
     
 }
 
-public class DemoMessageBuilder: MessageBuilder {
+public class DemoMessageBuilder: AbstractMessageBuilder {
     var demoDouble: Float64? = nil
     var demoInt32: Int? = nil
     var demoInt64: Int? = nil
@@ -331,7 +352,11 @@ public class DemoMessageBuilder: MessageBuilder {
     var demoRepeated: [String] = []
     var demoRepeatedNestedMessage: [DemoMessage.DemoNestedMessage]! = []
     
-    public func clear() -> Self {
+    required public init() {
+        super.init()
+    }
+
+    public override func clear() -> Self {
         self.demoDouble = nil
         self.demoInt32 = nil
         self.demoInt64 = nil
@@ -423,7 +448,7 @@ public class DemoMessageBuilder: MessageBuilder {
         return self
     }
     
-    public func build() -> Message {
+    public override func build() -> DemoMessage {
         let sizeInBytes = DemoMessage.sizeOf(demoDouble, demoInt32: demoInt32, demoInt64: demoInt64, demoBool: demoBool, demoString: demoString, demoNestedMessage: demoNestedMessage, demoRepeated: demoRepeated, demoRepeatedNestedMessage: demoRepeatedNestedMessage)
         return DemoMessage(sizeInBytes: sizeInBytes, demoDouble: demoDouble, demoInt32: demoInt32, demoInt64: demoInt64, demoBool: demoBool, demoString: demoString, demoNestedMessage: demoNestedMessage, demoRepeated: demoRepeated, demoRepeatedNestedMessage: demoRepeatedNestedMessage)
     }
@@ -440,7 +465,7 @@ private func sizeOfVarInt(v: Int) -> Int {
 }
 
 private func sizeOfString(s: String) -> Int {
-    let b = countElements(s.utf8)
+    let b = count(s.utf8)
     return sizeOfVarInt(b) + b
 }
 

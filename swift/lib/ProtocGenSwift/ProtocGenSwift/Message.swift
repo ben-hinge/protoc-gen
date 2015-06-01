@@ -5,17 +5,50 @@ public protocol MessageInit:class
     init()
 }
 
-public protocol Message:class,MessageInit
+public protocol Message: class, MessageInit
 {
-    public let sizeInBytes: Int32
-    
-    public func toWriter(w: Writer)
-    public class func fromReader(r: Reader) -> Self
-    public class func builder() -> MessageBuilder
+    func serializedSize() -> Int
+    func toWriter(w: Writer)
+    static func builder() -> MessageBuilder
 }
 
-public protocol MessageBuilder: class
+public protocol MessageBuilder: class, MessageInit
 {
-    public func clear() -> Self
-    public func build() -> Message
+    func clear() -> Self
+    func build() -> AbstractMessage
+}
+
+public class AbstractMessage: Message {
+    
+    required public init() {
+        
+    }
+    
+    public func serializedSize() -> Int {
+        return 0
+    }
+    
+    public func toWriter(w: Writer) {
+        NSException(name:"Override", reason:"", userInfo: nil).raise()
+    }
+    
+    public static func builder() -> MessageBuilder {
+        NSException(name:"Override", reason:"", userInfo: nil).raise()
+        return AbstractMessageBuilder()
+    }
+}
+
+public class AbstractMessageBuilder: MessageBuilder {
+    
+    required public init() {
+        
+    }
+    
+    public func clear() -> Self {
+        return self
+    }
+    
+    public func build() -> AbstractMessage {
+        return AbstractMessage()
+    }
 }

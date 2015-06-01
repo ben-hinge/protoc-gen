@@ -291,7 +291,7 @@ void CodeGenerator::GenDescriptor(
     const google::protobuf::Descriptor *message,
     google::protobuf::io::Printer *printer) 
 {
-  printer->Print("public class $name$: Equatable, Message {\n",
+  printer->Print("public class $name$: AbstractMessage, Equatable {\n",
                  "name", message->name());
   printer->Indent();
   printer->Print("public let sizeInBytes: Int\n");
@@ -301,6 +301,20 @@ void CodeGenerator::GenDescriptor(
                    "name", field->camelcase_name(),
                    "type", SwiftTypeForField(field, false));
   }
+  printer->Print("\n");
+
+  printer->Print("required public init() {\n");
+  printer->Indent();
+  printer->Print("fatalError(\"init() not valid consrtuctor\")\n");
+  printer->Outdent();
+  printer->Print("}\n");
+  printer->Print("\n");
+
+  printer->Print("public override func serializedSize() -> Int {\n");
+  printer->Indent();
+  printer->Print("return self.sizeInBytes\n");
+  printer->Outdent();
+  printer->Print("}\n");
   printer->Print("\n");
 
   printer->Print("init(sizeInBytes: Int");
@@ -319,6 +333,7 @@ void CodeGenerator::GenDescriptor(
     printer->Print("self.$name$ = $name$\n",
                    "name", field->camelcase_name());
   }
+  printer->Print("super.init()\n");
   printer->Outdent();
   printer->Print("}\n\n");
 
@@ -572,7 +587,7 @@ void CodeGenerator::GenMessageBuilder(
     google::protobuf::io::Printer *printer) 
 {
   std::string builder_name = message->name() + "Builder";
-  printer->Print("public class $builder$: MessageBuilder {\n",
+  printer->Print("public class $builder$: AbstractMessageBuilder {\n",
                  "builder", builder_name);
   printer->Indent();
   for (int i = 0; i < message->field_count(); ++i) {
@@ -587,7 +602,7 @@ void CodeGenerator::GenMessageBuilder(
   }
   printer->Print("\n");
 
-  printer->Print("public func clear() -> Self {\n");
+  printer->Print("public override func clear() -> Self {\n");
   printer->Indent();
 
   for (int i = 0; i < message->field_count(); ++i) {
@@ -631,7 +646,7 @@ void CodeGenerator::GenMessageBuilder(
     printer->Print("}\n\n");
   }
 
-  printer->Print("public func build() -> Message {\n",
+  printer->Print("public override func build() -> $type$ {\n",
                  "type", message->name());
   printer->Indent();
 
@@ -672,7 +687,7 @@ void CodeGenerator::GenMessage_toWriter(
     const google::protobuf::Descriptor *message,
     google::protobuf::io::Printer *printer) 
 {
-  printer->Print("public func toWriter(w: Writer) {\n");
+  printer->Print("public override func toWriter(w: Writer) {\n");
   printer->Indent();
 
 
