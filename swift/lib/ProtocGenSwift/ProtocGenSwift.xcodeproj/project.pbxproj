@@ -25,6 +25,7 @@
 		BC9DD4A21B176D2700BB199C /* Reader.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC17DDA71B04E641003F3DD4 /* Reader.swift */; };
 		BC9DD4A31B176D2A00BB199C /* JSONReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC17DDA51B04E641003F3DD4 /* JSONReader.swift */; };
 		BC9DD4A41B176D2D00BB199C /* ProtobufReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC17DDA61B04E641003F3DD4 /* ProtobufReader.swift */; };
+		BC9DD4AB1B17717F00BB199C /* Message.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC9DD4AA1B17717F00BB199C /* Message.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -63,6 +64,7 @@
 		BC9DD4901B176D0300BB199C /* ProtocGenSwiftTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ProtocGenSwiftTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		BC9DD4961B176D0300BB199C /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		BC9DD4971B176D0300BB199C /* ProtocGenSwift_OSX_Tests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProtocGenSwift_OSX_Tests.swift; sourceTree = "<group>"; };
+		BC9DD4AA1B17717F00BB199C /* Message.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Message.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -124,6 +126,7 @@
 		BC17DD8A1B04E609003F3DD4 /* ProtocGenSwift */ = {
 			isa = PBXGroup;
 			children = (
+				BC9DD4AA1B17717F00BB199C /* Message.swift */,
 				BC17DDAB1B04E648003F3DD4 /* Writer */,
 				BC17DDA41B04E633003F3DD4 /* Reader */,
 				BC17DD8B1B04E609003F3DD4 /* Supporting Files */,
@@ -397,6 +400,7 @@
 				BC17DDA81B04E641003F3DD4 /* JSONReader.swift in Sources */,
 				BC17DDAF1B04E655003F3DD4 /* JSONWriter.swift in Sources */,
 				BC17DDA91B04E641003F3DD4 /* ProtobufReader.swift in Sources */,
+				BC9DD4AB1B17717F00BB199C /* Message.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -717,6 +721,7 @@
 				BC9DD49B1B176D0300BB199C /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		BC9DD49C1B176D0300BB199C /* Build configuration list for PBXNativeTarget "ProtocGenSwift(OSX)Tests" */ = {
 			isa = XCConfigurationList;
@@ -725,6 +730,7 @@
 				BC9DD49E1B176D0300BB199C /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
