@@ -267,7 +267,7 @@ bool CodeGenerator::Generate(
 
   printer.Print("private func sizeOfString(s: String) -> Int {\n");
   printer.Indent();
-  printer.Print("let b = countElements(s.utf8)\n");
+  printer.Print("let b = count(s.utf8)\n");
   printer.Print("return sizeOfVarInt(b) + b\n");
   printer.Outdent();
   printer.Print("}\n");
@@ -310,13 +310,6 @@ void CodeGenerator::GenDescriptor(
   printer->Print("}\n");
   printer->Print("\n");
 
-  printer->Print("public override func serializedSize() -> Int {\n");
-  printer->Indent();
-  printer->Print("return self.sizeInBytes\n");
-  printer->Outdent();
-  printer->Print("}\n");
-  printer->Print("\n");
-
   printer->Print("init(sizeInBytes: Int");
   for (int i = 0, lastI = message->field_count() - 1; i <= lastI; ++i) {
     printer->Print(", ");
@@ -336,6 +329,13 @@ void CodeGenerator::GenDescriptor(
   printer->Print("super.init()\n");
   printer->Outdent();
   printer->Print("}\n\n");
+
+  printer->Print("public override func serializedSize() -> Int {\n");
+  printer->Indent();
+  printer->Print("return self.sizeInBytes\n");
+  printer->Outdent();
+  printer->Print("}\n");
+  printer->Print("\n");
 
   CodeGenerator::GenMessage_toWriter(message, printer);
   printer->Print("\n");
@@ -411,7 +411,7 @@ void CodeGenerator::GenMessage_fromReader(
     const google::protobuf::Descriptor *message,
     google::protobuf::io::Printer *printer) 
 {
-  printer->Print("public class func fromReader(r: Reader) -> Self {\n",
+  printer->Print("public class func fromReader(r: Reader) -> $name$ {\n",
                  "name", message->name());
   printer->Indent();
 
@@ -573,7 +573,7 @@ void CodeGenerator::GenMessage_builder(
     const google::protobuf::Descriptor *message,
     google::protobuf::io::Printer *printer) 
 {
-  printer->Print("public class func builder() -> MessageBuilder {\n",
+  printer->Print("public class func builder() -> $name$Builder {\n",
                  "name", message->name());
   printer->Indent();
   printer->Print("return $name$Builder()\n",

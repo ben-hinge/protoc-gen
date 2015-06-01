@@ -217,20 +217,21 @@ public class DemoMessage: AbstractMessage, Equatable {
         public let nestedString: String?
         public let nestedInt32: Int?
         
+        required public init() {
+            fatalError("init() not valid consrtuctor")
+        }
+        
         init(sizeInBytes: Int, nestedString: String?, nestedInt32: Int?) {
             self.sizeInBytes = sizeInBytes
             self.nestedString = nestedString
             self.nestedInt32 = nestedInt32
-        }
-        
-        required public init() {
-            fatalError("init() not valid consrtuctor")
+            super.init()
         }
         
         public override func serializedSize() -> Int {
             return self.sizeInBytes
         }
-
+        
         public override func toWriter(w: Writer) {
             var tagMap: [Int:(String, Bool)] = [
                 10 : ("nestedString", false),
@@ -303,10 +304,6 @@ public class DemoMessage: AbstractMessage, Equatable {
         var nestedString: String? = nil
         var nestedInt32: Int? = nil
         
-        required public init() {
-            super.init()
-        }
-        
         public override func clear() -> Self {
             self.nestedString = nil
             self.nestedInt32 = nil
@@ -352,10 +349,6 @@ public class DemoMessageBuilder: AbstractMessageBuilder {
     var demoRepeated: [String] = []
     var demoRepeatedNestedMessage: [DemoMessage.DemoNestedMessage]! = []
     
-    required public init() {
-        super.init()
-    }
-
     public override func clear() -> Self {
         self.demoDouble = nil
         self.demoInt32 = nil
