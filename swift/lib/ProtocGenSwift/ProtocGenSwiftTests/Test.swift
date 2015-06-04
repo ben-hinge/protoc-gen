@@ -30,7 +30,7 @@ public func ==(a: DemoMessage.DemoNestedMessage, b: DemoMessage.DemoNestedMessag
     )
 }
 
-public class DemoMessage: AbstractMessage, Equatable {
+public class DemoMessage: Equatable {
     public let sizeInBytes: Int
     public let demoDouble: Float64?
     public let demoInt32: Int?
@@ -40,10 +40,6 @@ public class DemoMessage: AbstractMessage, Equatable {
     public let demoNestedMessage: DemoNestedMessage?
     public let demoRepeated: [String]
     public let demoRepeatedNestedMessage: [DemoNestedMessage]!
-    
-    required public init() {
-        fatalError("init() not valid consrtuctor")
-    }
     
     init(sizeInBytes: Int, demoDouble: Float64?, demoInt32: Int?, demoInt64: Int?, demoBool: Bool?, demoString: String?, demoNestedMessage: DemoNestedMessage?, demoRepeated: [String], demoRepeatedNestedMessage: [DemoNestedMessage]!) {
         self.sizeInBytes = sizeInBytes
@@ -55,14 +51,9 @@ public class DemoMessage: AbstractMessage, Equatable {
         self.demoNestedMessage = demoNestedMessage
         self.demoRepeated = demoRepeated
         self.demoRepeatedNestedMessage = demoRepeatedNestedMessage
-        super.init()
     }
     
-    public override func serializedSize() -> Int {
-        return self.sizeInBytes
-    }
-    
-    public override func toWriter(w: Writer) {
+    public func toWriter(w: Writer) {
         var tagMap: [Int:(String, Bool)] = [
             9 : ("demoDouble", false),
             16 : ("demoInt32", false),
@@ -212,27 +203,18 @@ public class DemoMessage: AbstractMessage, Equatable {
         return DemoMessageBuilder()
     }
     
-    public class DemoNestedMessage: AbstractMessage, Equatable {
+    public class DemoNestedMessage: Equatable {
         public let sizeInBytes: Int
         public let nestedString: String?
         public let nestedInt32: Int?
-        
-        required public init() {
-            fatalError("init() not valid consrtuctor")
-        }
         
         init(sizeInBytes: Int, nestedString: String?, nestedInt32: Int?) {
             self.sizeInBytes = sizeInBytes
             self.nestedString = nestedString
             self.nestedInt32 = nestedInt32
-            super.init()
         }
         
-        public override func serializedSize() -> Int {
-            return self.sizeInBytes
-        }
-        
-        public override func toWriter(w: Writer) {
+        public func toWriter(w: Writer) {
             var tagMap: [Int:(String, Bool)] = [
                 10 : ("nestedString", false),
                 16 : ("nestedInt32", false)
@@ -300,11 +282,11 @@ public class DemoMessage: AbstractMessage, Equatable {
         
     }
     
-    public class DemoNestedMessageBuilder: AbstractMessageBuilder {
+    public class DemoNestedMessageBuilder {
         var nestedString: String? = nil
         var nestedInt32: Int? = nil
         
-        public override func clear() -> Self {
+        public func clear() -> Self {
             self.nestedString = nil
             self.nestedInt32 = nil
             return self
@@ -330,7 +312,7 @@ public class DemoMessage: AbstractMessage, Equatable {
             return self
         }
         
-        public override func build() -> DemoNestedMessage {
+        public func build() -> DemoNestedMessage {
             let sizeInBytes = DemoNestedMessage.sizeOf(nestedString, nestedInt32: nestedInt32)
             return DemoNestedMessage(sizeInBytes: sizeInBytes, nestedString: nestedString, nestedInt32: nestedInt32)
         }
@@ -339,7 +321,7 @@ public class DemoMessage: AbstractMessage, Equatable {
     
 }
 
-public class DemoMessageBuilder: AbstractMessageBuilder {
+public class DemoMessageBuilder {
     var demoDouble: Float64? = nil
     var demoInt32: Int? = nil
     var demoInt64: Int? = nil
@@ -349,7 +331,7 @@ public class DemoMessageBuilder: AbstractMessageBuilder {
     var demoRepeated: [String] = []
     var demoRepeatedNestedMessage: [DemoMessage.DemoNestedMessage]! = []
     
-    public override func clear() -> Self {
+    public func clear() -> Self {
         self.demoDouble = nil
         self.demoInt32 = nil
         self.demoInt64 = nil
@@ -441,7 +423,7 @@ public class DemoMessageBuilder: AbstractMessageBuilder {
         return self
     }
     
-    public override func build() -> DemoMessage {
+    public func build() -> DemoMessage {
         let sizeInBytes = DemoMessage.sizeOf(demoDouble, demoInt32: demoInt32, demoInt64: demoInt64, demoBool: demoBool, demoString: demoString, demoNestedMessage: demoNestedMessage, demoRepeated: demoRepeated, demoRepeatedNestedMessage: demoRepeatedNestedMessage)
         return DemoMessage(sizeInBytes: sizeInBytes, demoDouble: demoDouble, demoInt32: demoInt32, demoInt64: demoInt64, demoBool: demoBool, demoString: demoString, demoNestedMessage: demoNestedMessage, demoRepeated: demoRepeated, demoRepeatedNestedMessage: demoRepeatedNestedMessage)
     }

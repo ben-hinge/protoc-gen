@@ -1,4 +1,3 @@
-import UIKit
 import XCTest
 import ProtocGenSwift
 
@@ -32,7 +31,7 @@ class ProtocGenSwiftTests: XCTestCase {
         var jsonString = NSString(data: buffer, encoding: NSUTF8StringEncoding)
         assert(jsonString == "{\"demoInt32\":42,\"demoNestedMessage\":{\"nestedString\":\"nested string\",\"nestedInt32\":42},\"demoRepeated\":[\"Hello\",\"World\",\"Foo\",\"Bar\"],\"demoDouble\":5,\"demoString\":\"demo string\",\"demoBool\":true,\"demoRepeatedNestedMessage\":[{\"nestedString\":\"nested string\",\"nestedInt32\":42},{\"nestedString\":\"nested string\",\"nestedInt32\":42}],\"demoInt64\":123}")
         
-        let reader = JSONReader.fromBuffer(buffer)!
+        let reader = JSONReader.from(buffer)!
         let readDemoMessage = DemoMessage.fromReader(reader)
         assert(demoMessage == readDemoMessage, "read object to match written object")
         assert(demoMessage.demoNestedMessage == readDemoMessage.demoNestedMessage, "read nested object to match written nested object")
@@ -48,7 +47,7 @@ class ProtocGenSwiftTests: XCTestCase {
         let writer = ProtobufWriter.withCapacity(demoMessage.sizeInBytes)!
         demoMessage.toWriter(writer)
         let buffer = writer.toBuffer()
-        let reader = ProtobufReader.fromBuffer(buffer)!
+        let reader = ProtobufReader.from(buffer)!
         let readDemoMessage = DemoMessage.fromReader(reader)
         assert(demoMessage == readDemoMessage, "read object to match written object")
         assert(demoMessage.demoNestedMessage == readDemoMessage.demoNestedMessage, "read nested object to match written nested object")

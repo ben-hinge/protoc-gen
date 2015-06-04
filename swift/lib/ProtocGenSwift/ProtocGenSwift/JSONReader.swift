@@ -15,8 +15,13 @@ public class JSONReader : Reader {
         self.generator = dictionary.generate()
     }
     
-    public class func fromBuffer(data: NSData) -> Reader? {
+    public class func from(data: NSData) -> Reader? {
         var dict: NSDictionary = NSJSONSerialization.JSONObjectWithData(data, options: nil, error: nil)! as! NSDictionary
+        return JSONReader(dictionary: dict)
+    }
+    
+    public class func from(inputStream: NSInputStream) -> Reader? {
+        var dict: NSDictionary = NSJSONSerialization.JSONObjectWithStream(inputStream, options: nil, error: nil)! as! NSDictionary
         return JSONReader(dictionary: dict)
     }
     

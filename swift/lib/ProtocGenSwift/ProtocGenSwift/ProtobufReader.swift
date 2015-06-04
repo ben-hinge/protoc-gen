@@ -1,24 +1,21 @@
 import Foundation
 
 public class ProtobufReader : Reader {
+    var offset = 0
     var limit: Int
-    var offset: Int
-    let buffer: UnsafePointer<UInt8>
-    var data: NSData?
+    let _readByte: ReadByte
     
-    init(buffer: UnsafePointer<UInt8>, offset: Int, limit: Int) {
-        self.buffer = buffer
-        self.offset = offset
+    init(limit: Int = -1, readByte: ReadByte) {
+        self._readByte = readByte
         self.limit = limit
     }
     
-    convenience init(data: NSData) {
-        self.init(buffer: UnsafePointer<UInt8>(data.bytes), offset: 0, limit: data.length)
-        self.data = data
+    public class func from(data: NSData) -> Reader? {
+        return ProtobufReader(limit: data.length, readByte: readByteFromData(data))
     }
     
-    public class func fromBuffer(data: NSData) -> Reader? {
-        return ProtobufReader(data: data)
+    public class func from(inputStream: NSInputStream) -> Reader? {
+        return ProtobufReader(readByte: readByteFromInputStream(inputStream))
     }
     
     public func readTag() -> Int {
@@ -26,10 +23,10 @@ public class ProtobufReader : Reader {
     }
     
     public func readByte() -> UInt8 {
-        if offset == limit {
+        if limit != -1 && offset == limit {
             return 0
         }
-        return buffer[offset++]
+        return _readByte(offset++)
     }
     
     public func readVarInt() -> Int {
