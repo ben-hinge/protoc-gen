@@ -40,8 +40,21 @@ public class ProtobufWriter : Writer {
         writeByte(UInt8(x))
     }
     
+    public func writeVarUInt64(v: UInt64) {
+        writeVarUInt(UInt(v))
+    }
+    
     public func writeBool(v: Bool) {
         writeByte(v ? 1 : 0)
+    }
+    
+    public func writeData(v: NSData) {
+        let numberOfBytes = v.length
+        self.writeVarInt(numberOfBytes)
+        let ptr = UnsafePointer<UInt8>(v.bytes)
+        for var i = 0; i < numberOfBytes; i++ {
+            self.writeByte(ptr[i])
+        }
     }
     
     public func writeFloat32(v: Float32) {

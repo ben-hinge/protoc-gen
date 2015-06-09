@@ -47,8 +47,22 @@ public class ProtobufReader : Reader {
         return v
     }
     
+    public func readVarUInt64() -> UInt64 {
+        return UInt64(readVarUInt())
+    }
+    
     public func readBool() -> Bool {
         return readVarInt() != 0
+    }
+    
+    public func readData() -> NSData {
+        let numberOfBytes = self.readVarInt()
+        let data = NSMutableData(capacity: numberOfBytes)!
+        let ptr = UnsafeMutablePointer<UInt8>(data.bytes)
+        for var i = 0; i < numberOfBytes; i++ {
+            ptr[i] = self.readByte()
+        }
+        return data
     }
     
     public func readUInt32() -> UInt32 {

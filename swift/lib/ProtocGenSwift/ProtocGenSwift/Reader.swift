@@ -7,7 +7,9 @@ public protocol Reader {
     func readByte() -> UInt8
     func readVarInt() -> Int
     func readVarUInt() -> UInt
+    func readVarUInt64() -> UInt64
     func readBool() -> Bool
+    func readData() -> NSData
     func readFloat32() -> Float32
     func readFloat64() -> Float64
     func readUInt32() -> UInt32

@@ -34,8 +34,16 @@ public class JSONWriter : Writer {
         self.writeValue(v)
     }
     
+    public func writeVarUInt64(v: UInt64) {
+        self.writeValue(Int(v))
+    }
+    
     public func writeBool(v: Bool) {
         self.writeValue(v)
+    }
+    
+    public func writeData(v: NSData) {
+        NSException(name:"Unsupported Operation", reason:"", userInfo: nil).raise()
     }
     
     public func writeFloat32(v: Float32) {

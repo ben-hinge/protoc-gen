@@ -66,11 +66,23 @@ public class JSONReader : Reader {
         return 0
     }
     
+    public func readVarUInt64() -> UInt64 {
+        if let v = (object as? NSNumber)?.unsignedLongLongValue {
+            return UInt64(v)
+        }
+        return 0
+    }
+    
     public func readBool() -> Bool {
         if let v = (object as? NSNumber)?.boolValue {
             return v
         }
         return false
+    }
+    
+    public func readData() -> NSData {
+        NSException(name:"Unsupported Operation", reason:"", userInfo: nil).raise()
+        return NSData()
     }
     
     public func readUInt32() -> UInt32 {
