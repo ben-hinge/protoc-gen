@@ -1,5 +1,16 @@
 import Foundation
 
+public enum ProtobufWireFormat:Int32
+{
+    case WireFormatVarint = 0
+    case WireFormatFixed64 = 1
+    case WireFormatLengthDelimited = 2
+    case WireFormatStartGroup = 3
+    case WireFormatEndGroup = 4
+    case WireFormatFixed32 = 5
+    case WireFormatTagTypeMask = 7
+}
+
 public class ProtobufReader : Reader {
     var offset = 0
     var limit: Int
