@@ -493,7 +493,7 @@ void CodeGenerator::GenMessage_toWriter(
     const google::protobuf::Descriptor *message,
     google::protobuf::io::Printer *printer) 
 {
-  printer->Print("public void toWriter() {\n");
+  printer->Print("public String toWriter() {\n");
   printer->Indent();
     
   printer->Print("try {\n");
