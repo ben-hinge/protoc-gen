@@ -329,18 +329,19 @@ void CodeGenerator::GenDescriptor(
   }
   printer->Print("\n");
 
-  printer->Print("public $name$(int sizeInBytes",
+  printer->Print("public $name$(",
                  "name", message->name());
   for (int i = 0, lastI = message->field_count() - 1; i <= lastI; ++i) {
-    printer->Print(", ");
     const google::protobuf::FieldDescriptor *field = message->field(i);
     printer->Print("$type$ $name$",
                    "name", field->camelcase_name(),
                    "type", AndroidTypeForField(field, false));
+    if (i != lastI) {
+      printer->Print(", ");
+    }
   }
   printer->Print(") {\n");
   printer->Indent();
-  printer->Print("this.sizeInBytes = sizeInBytes;\n");
   for (int i = 0; i < message->field_count(); ++i) {
     const google::protobuf::FieldDescriptor *field = message->field(i);
     printer->Print("this.$name$ = $name$;\n",
@@ -491,24 +492,15 @@ void CodeGenerator::GenMessageBuilder(
                  "name", message->name());
   printer->Indent();
 
-  printer->Print("int sizeInBytes = $name$.sizeOf(",
+  printer->Print("return new $name$(",
                   "name", message->name());
   for (int i = 0, lastI = message->field_count() - 1; i <= lastI; ++i) {
-    const google::protobuf::FieldDescriptor *field = message->field(i);
-    printer->Print("$name$",
-                 "name", field->camelcase_name());
-    if (i != lastI) {
-      printer->Print(", ");
-    }
-  }
-  printer->Print(");\n");
-  printer->Print("return new $name$(sizeInBytes",
-                  "name", message->name());
-  for (int i = 0, lastI = message->field_count() - 1; i <= lastI; ++i) {
-    printer->Print(", ");
     const google::protobuf::FieldDescriptor *field = message->field(i);
     printer->Print("$name$",
                    "name", field->camelcase_name());
+    if (i != lastI) {
+        printer->Print(", ");
+    }
   }
   printer->Print(");\n");
 
