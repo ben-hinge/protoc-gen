@@ -354,12 +354,9 @@ void CodeGenerator::GenDescriptor(
 
   CodeGenerator::GenMessage_fromReader(message, printer);
   printer->Print("\n");
-
-//  CodeGenerator::GenMessage_sizeOf(message, printer);
-//  printer->Print("\n");
-
-//  CodeGenerator::GenMessage_equality(message, printer);
-//  printer->Print("\n");
+    
+  CodeGenerator::GenMessage_equality(message, printer);
+  printer->Print("\n");
 
   CodeGenerator::GenMessage_builder(message, printer);
   printer->Print("\n");
@@ -576,90 +573,6 @@ void CodeGenerator::GenMessage_equality(
   printer->Print(" return false;\n");
   printer->Outdent();
   printer->Print("}\n");
-  printer->Outdent();
-  printer->Print("}\n");
-}
-
-void CodeGenerator::GenMessage_sizeOf(
-    const google::protobuf::Descriptor *message,
-    google::protobuf::io::Printer *printer) 
-{
-  printer->Print("static int sizeOf(");
-  for (int i = 0, lastI = message->field_count() - 1; i <= lastI; ++i) {
-    const google::protobuf::FieldDescriptor *field = message->field(i);
-    printer->Print("$type$ $name$",
-                   "name", field->camelcase_name(),
-                   "type", AndroidTypeForField(field, false));
-    if (i != lastI) {
-      printer->Print(", ");
-    }
-  }
-  printer->Print(") {\n");
-  printer->Indent();
-  
-  printer->Print("int n = 0;\n\n");
-
-  for (int i = 0; i < message->field_count(); ++i) {
-    const google::protobuf::FieldDescriptor *field = message->field(i);
-    string name = field->camelcase_name();
-
-    if (field->is_optional()) {
-      printer->Print("if (null != $name$) {\n",
-                     "name", name);
-      printer->Indent();
-    } else if (field->is_repeated()) {
-      printer->Print("for ($type$ v : $name$) {\n",
-                     "type", AndroidType(field, false),
-                     "name", name);
-      printer->Indent();
-      name = "v";
-    }
-
-    int tag = WireFormatLite::MakeTag(field->number(), WireFormat::WireTypeForField(field));
-    string size_of_tag = std::to_string(sizeOfVarInt(tag));
-
-    if (field->type() == google::protobuf::FieldDescriptor::TYPE_MESSAGE) {
-      printer->Print("n += $size_of_tag$ + sizeOfVarInt($name$.sizeInBytes) + $name$.sizeInBytes;\n",
-                     "name", name, 
-                     "size_of_tag", size_of_tag);
-    } else if (field->type() == google::protobuf::FieldDescriptor::TYPE_ENUM) {
-      printer->Print("n += $size_of_tag$ + sizeOfVarInt($name$.rawValue);\n",
-                     "name", name, 
-                     "size_of_tag", size_of_tag);
-    } else if (field->type() == google::protobuf::FieldDescriptor::TYPE_BOOL) {
-      printer->Print("n += $size_of_tag$ + 1;\n",
-                     "size_of_tag", size_of_tag);
-    } else if (field->type() == google::protobuf::FieldDescriptor::TYPE_INT32) {
-      printer->Print("n += $size_of_tag$ + sizeOfVarInt($name$);\n",
-                     "size_of_tag", size_of_tag,
-                     "name", name);
-    } else if (field->type() == google::protobuf::FieldDescriptor::TYPE_INT64) {
-      printer->Print("n += $size_of_tag$ + sizeOfVarInt($name$);\n",
-                     "size_of_tag", size_of_tag,
-                     "name", name);
-    } else if (field->type() == google::protobuf::FieldDescriptor::TYPE_FLOAT) {
-      printer->Print("n += $size_of_tag$ + 4;\n",
-                     "size_of_tag", size_of_tag);
-    } else if (field->type() == google::protobuf::FieldDescriptor::TYPE_DOUBLE) {
-      printer->Print("n += $size_of_tag$ + 8;\n",
-                     "size_of_tag", size_of_tag);
-    } else if (field->type() == google::protobuf::FieldDescriptor::TYPE_STRING) {
-      printer->Print("n += $size_of_tag$ + sizeOfString($name$);\n",
-                     "size_of_tag", size_of_tag,
-                     "name", name);
-    } else {
-      // TODO: Other types
-    }
-
-    if (field->is_optional() || field->is_repeated()) {
-      printer->Outdent();
-      printer->Print("}\n");
-    }
-  }
-
-  printer->Print("\n"
-                 "return n;\n");
-
   printer->Outdent();
   printer->Print("}\n");
 }
