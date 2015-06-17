@@ -547,14 +547,14 @@ void CodeGenerator::GenMessage_equality(
                  "name", name);
   printer->Print("return (\n");
   printer->Indent();
-  printer->Indent();
-  printer->Print(" this.sizeInBytes == castObject.sizeInBytes\n");
-  printer->Outdent();
   
-  for (int i = 0; i < message->field_count(); ++i) {
+  for (int i = 0, lastI = message->field_count() - 1; i <= lastI; ++i) {
     const google::protobuf::FieldDescriptor *field = message->field(i);
-    printer->Print("&& this.$name$ == castObject.$name$\n",
+    printer->Print("this.$name$ == castObject.$name$",
       "name", field->camelcase_name());
+    if (i != lastI) {
+      printer->Print(" &&\n");
+    }
   }
 
   printer->Outdent();
