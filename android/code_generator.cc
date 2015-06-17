@@ -256,9 +256,13 @@ bool CodeGenerator::Generate(
 
   printer.Print(
       "\n"
-      "import java.util.HashMap;\n"
+      "import com.fasterxml.jackson.annotation.JsonProperty;\n"
+      "import com.fasterxml.jackson.core.JsonProcessingException;\n"
+      "import com.fasterxml.jackson.databind.ObjectMapper;\n"
+      "\n"
+      "import java.io.IOException;\n"
+      "import java.io.InputStream;\n"
       "import java.util.List;\n"
-      "import java.util.Map;\n"
       "\n");
 
   printer.Print("public class $name$ {\n",
@@ -314,13 +318,12 @@ void CodeGenerator::GenDescriptor(
     const google::protobuf::Descriptor *message,
     google::protobuf::io::Printer *printer) 
 {
-  printer->Print("public static class $name$ {\n",
+  printer->Print("public static class $name$ {\n\n",
                  "name", message->name());
   printer->Indent();
-  printer->Print("public final int sizeInBytes;\n");
   for (int i = 0; i < message->field_count(); ++i) {
     const google::protobuf::FieldDescriptor *field = message->field(i);
-    printer->Print("public final $type$ $name$;\n",
+    printer->Print("@JsonProperty(\"$name$\") $type$ $name$;\n",
                    "name", field->camelcase_name(),
                    "type", AndroidTypeForField(field, false));
   }
@@ -352,11 +355,11 @@ void CodeGenerator::GenDescriptor(
   CodeGenerator::GenMessage_fromReader(message, printer);
   printer->Print("\n");
 
-  CodeGenerator::GenMessage_sizeOf(message, printer);
-  printer->Print("\n");
+//  CodeGenerator::GenMessage_sizeOf(message, printer);
+//  printer->Print("\n");
 
-  CodeGenerator::GenMessage_equality(message, printer);
-  printer->Print("\n");
+//  CodeGenerator::GenMessage_equality(message, printer);
+//  printer->Print("\n");
 
   CodeGenerator::GenMessage_builder(message, printer);
   printer->Print("\n");
@@ -389,157 +392,20 @@ void CodeGenerator::GenMessage_fromReader(
     const google::protobuf::Descriptor *message,
     google::protobuf::io::Printer *printer) 
 {
-  printer->Print("public static $name$ fromReader(Reader r) {\n",
+  printer->Print("public static $name$ fromReader(InputStream inputStream) {\n",
                  "name", message->name());
   printer->Indent();
-
-  printer->Print("Map<String, Reader.TagMapValue> tagMap = new HashMap<String, Reader.TagMapValue>();\n");
     
-  for (int i = 0; i < message->field_count(); ++i) {
-    const google::protobuf::FieldDescriptor *field = message->field(i);
-
-    string name = field->camelcase_name();
-    string tag = to_string(WireFormatLite::MakeTag(field->number(), WireFormat::WireTypeForField(field)));
-    string isRepeated = "false";
-    
-    if (field->is_repeated()) {
-      isRepeated = "true";
-    }
-
-    printer->Print("tagMap.put(\"$name$\", new Reader.TagMapValue($tag$, $repeated$));",
-                    "name", name,
-                    "tag", tag,
-                    "repeated", isRepeated);
-
-    printer->Print("\n");
-  }
-
-  printer->Print("\n");
-  printer->Print("r.pushTagMap(tagMap);\n\n");
-
-  for (int i = 0; i < message->field_count(); ++i) {
-    const google::protobuf::FieldDescriptor *field = message->field(i);
-
-    string default_value = DefaultValueForField(field);
-
-    printer->Print("$type$ $name$ = $default_value$;\n",
-                   "type", AndroidTypeForField(field, false),
-                   "name", field->camelcase_name(),
-                   "default_value", default_value);
-  }
-  printer->Print("\n");
-  printer->Print("boolean continueLoop = true;\n");
-  printer->Print("while (continueLoop) {\n");
+  printer->Print("try {\n");
   printer->Indent();
-  printer->Print("switch (r.readTag()) {\n");
-  for (int i = 0; i < message->field_count(); ++i) {
-    const google::protobuf::FieldDescriptor *field = message->field(i);
-
-    string tag = to_string(WireFormatLite::MakeTag(field->number(), WireFormat::WireTypeForField(field)));
-
-    printer->Print("case $tag$: {\n",
-                   "tag", tag);
-    printer->Indent();
-
-    string name = field->camelcase_name();
-
-    if (field->type() == google::protobuf::FieldDescriptor::TYPE_MESSAGE) {
-      string type = field->message_type()->full_name();
-
-      printer->Print("long limit = r.pushLimit(r.readVarInt());\n");
-
-      if (field->is_repeated()) {
-        printer->Print("$name$.add($type$.fromReader(r));\n",
-                       "type", type,
-                       "name", name);
-      } else {
-        printer->Print("$name$ = $type$.fromReader(r);\n",
-                       "type", type,
-                       "name", name);
-      }
-
-      printer->Print("r.popLimit(limit);\n");
-    } else if (field->type() == google::protobuf::FieldDescriptor::TYPE_ENUM) {
-      string type = field->enum_type()->name();
-      if (field->is_repeated()) {
-        printer->Print("$name$.add($type$(rawValue: r.readVarInt())!)\n",
-                       "type", type,
-                       "name", name);
-      } else {
-        printer->Print("$name$ = $type$(rawValue: r.readVarInt())!\n",
-                       "type", type,
-                       "name", name);
-      }
-    } else {
-      std::string read_func;
-      std::string cast_func = "";
-      if (field->type() == google::protobuf::FieldDescriptor::TYPE_BOOL) {
-        read_func = "readBool";
-      } else if (field->type() == google::protobuf::FieldDescriptor::TYPE_INT32) {
-        cast_func = "(int)";
-        read_func = "readVarInt";
-      } else if (field->type() == google::protobuf::FieldDescriptor::TYPE_INT64) {
-        read_func = "readVarInt";
-      } else if (field->type() == google::protobuf::FieldDescriptor::TYPE_FLOAT) {
-        read_func = "readFloat32";
-      } else if (field->type() == google::protobuf::FieldDescriptor::TYPE_DOUBLE) {
-        read_func = "readFloat64";
-      } else if (field->type() == google::protobuf::FieldDescriptor::TYPE_STRING) {
-        read_func = "readString";
-      } else {
-        read_func = "undefined";
-      }
-
-      if (field->is_repeated()) {
-        printer->Print("$name$.add(r.$read_func$());\n",
-                       "read_func",read_func,
-                       "name", name);
-      } else {
-        printer->Print("$name$ = $cast_func$r.$read_func$();\n",
-                       "cast_func", cast_func,
-                       "read_func",read_func,
-                       "name", name);
-      }
-    }
-    printer->Print("break;\n");
-    printer->Outdent();
-    printer->Print("}\n");
-  }
-  printer->Print("default:\n");
+  printer->Print("return new ObjectMapper().readValue(inputStream, $name$.class);\n",
+                 "name", message->name());
+  printer->Outdent();
+  printer->Print("} catch (IOException e) {\n");
   printer->Indent();
-  printer->Print("continueLoop = false;\n");
-  printer->Print("break;\n");
+  printer->Print("e.printStackTrace();\n");
   printer->Outdent();
-  //
-  printer->Print("}\n");
-  printer->Outdent();
-  printer->Print("}\n\n");
-
-  printer->Print("r.popTagMap();\n");
-
-  printer->Print("\n");
-  printer->Print("int sizeInBytes = $name$.sizeOf(",
-                  "name", message->name());
-  for (int i = 0, lastI = message->field_count() - 1; i <= lastI; ++i) {
-    const google::protobuf::FieldDescriptor *field = message->field(i);
-    printer->Print("$name$",
-                   "name", field->camelcase_name());
-    if (i != lastI) {
-      printer->Print(", ");
-    }
-  }
-  printer->Print(");\n");
-
-  printer->Print("return new $name$(sizeInBytes",
-                  "name", message->name());
-  for (int i = 0, lastI = message->field_count() - 1; i <= lastI; ++i) {
-    printer->Print(", ");
-    const google::protobuf::FieldDescriptor *field = message->field(i);
-    printer->Print("$name$",
-                   "name", field->camelcase_name());
-  }
-  printer->Print(");\n");
-
+  printer->Print("}\n\nreturn null;\n");
   printer->Outdent();
   printer->Print("}\n");
 }
@@ -660,100 +526,18 @@ void CodeGenerator::GenMessage_toWriter(
     const google::protobuf::Descriptor *message,
     google::protobuf::io::Printer *printer) 
 {
-  printer->Print("public void toWriter(Writer w) {\n");
+  printer->Print("public void toWriter() {\n");
   printer->Indent();
-
-
-  printer->Print("Map<Integer, Writer.TagMapValue> tagMap = new HashMap<Integer, Writer.TagMapValue>(); \n");
     
-  for (int i = 0; i < message->field_count(); ++i) {
-    const google::protobuf::FieldDescriptor *field = message->field(i);
-
-    string name = field->camelcase_name();
-    string tag = to_string(WireFormatLite::MakeTag(field->number(), WireFormat::WireTypeForField(field)));
-    string isRepeated = "false";
-
-    if (field->is_repeated()) {
-      isRepeated = "true";
-    }
-
-    printer->Print("tagMap.put($tag$, new Writer.TagMapValue(\"$name$\", $repeated$));",
-                    "tag", tag,
-                    "name", name,
-                    "repeated", isRepeated);
-
-    printer->Print("\n");
-  }
-
-  printer->Print("\n");
-  printer->Print("w.pushTagMap(tagMap);\n\n");
-
-  for (int i = 0; i < message->field_count(); ++i) {
-    const google::protobuf::FieldDescriptor *field = message->field(i);
-    string name = "this." + field->camelcase_name();
-    string tag = to_string(WireFormatLite::MakeTag(field->number(), WireFormat::WireTypeForField(field)));
-
-    if (field->is_optional()) {
-      printer->Print("if (null != $name$) {\n",
-                     "name", name);
-      printer->Indent();
-    } else if (field->is_repeated()) {
-      printer->Print("for ($type$ v : $name$) {\n",
-                   "type", AndroidType(field, false),
-                   "name", name);
-      printer->Indent();
-      name = "v";
-    }
-    
-    if (field->type() == google::protobuf::FieldDescriptor::TYPE_MESSAGE) {
-      printer->Print("w.writeTag($tag$);\n"
-                     "w.writeVarInt($name$.sizeInBytes);\n"
-                     "$name$.toWriter(w);\n",
-                     "tag", tag,
-                     "name", name);
-    } else if (field->type() == google::protobuf::FieldDescriptor::TYPE_ENUM) {
-      printer->Print("w.writeTag($tag$);\n"
-                     "w.writeVarInt($name$.rawValue);\n",
-                     "tag", tag,
-                     "name", name);
-    } else {
-      std::string write_func;
-      if (field->type() == google::protobuf::FieldDescriptor::TYPE_BOOL) {
-        write_func = "writeBool";
-      } else if (field->type() == google::protobuf::FieldDescriptor::TYPE_INT32) {
-        write_func = "writeVarInt";
-      } else if (field->type() == google::protobuf::FieldDescriptor::TYPE_INT64) {
-        write_func = "writeVarInt";
-      } else if (field->type() == google::protobuf::FieldDescriptor::TYPE_FLOAT) {
-        write_func = "writeFloat32";
-      } else if (field->type() == google::protobuf::FieldDescriptor::TYPE_DOUBLE) {
-        write_func = "writeFloat64";
-      } else if (field->type() == google::protobuf::FieldDescriptor::TYPE_STRING) {
-        write_func = "writeString";
-      } else {
-        write_func = "undefined";
-      }
-
-      printer->Print("w.writeTag($tag$);\n"
-                     "w.$write_func$($name$);\n",
-                     "write_func", write_func,
-                     "tag", tag,
-                     "name", name);
-    }
-
-    if (field->is_repeated() || field->is_optional()) {
-      printer->Outdent();
-      printer->Print("}\n");
-    }
-
-    if (i < message->field_count() - 1) {
-      printer->Print("\n");
-    }
-  }
-
-  printer->Print("\n");
-  printer->Print("w.popTagMap();\n");
-
+  printer->Print("try {\n");
+  printer->Indent();
+  printer->Print("return new ObjectMapper().writer().withDefaultPrettyPrinter().writeValueAsString(this);\n");
+  printer->Outdent();
+  printer->Print("} catch (JsonProcessingException e) {\n");
+  printer->Indent();
+  printer->Print("e.printStackTrace();\n");
+  printer->Outdent();
+  printer->Print("}\n\nreturn null;\n");
   printer->Outdent();
   printer->Print("}\n");
 }
