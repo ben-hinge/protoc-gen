@@ -275,28 +275,6 @@ bool CodeGenerator::Generate(
         &printer);
   }
 
-  printer.Print("static int sizeOfVarInt(long v) {\n");
-  printer.Indent();
-  printer.Print("int n = 0;\n");
-  printer.Print("long x = v;\n");
-  printer.Print("do {\n");
-  printer.Indent();
-  printer.Print("x = x >> 7;\n");
-  printer.Print("n++;\n");
-  printer.Outdent();
-  printer.Print("} while (x > 0);\n");
-  printer.Print("return n;\n");
-  printer.Outdent();
-  printer.Print("}\n");
-  printer.Print("\n");
-
-  printer.Print("static int sizeOfString(String s) {\n");
-  printer.Indent();
-  printer.Print("int length = s.length();\n");
-  printer.Print("return sizeOfVarInt(length) + length;\n");
-  printer.Outdent();
-  printer.Print("}\n");
-
   printer.Outdent();
   printer.Print("}\n");
 
