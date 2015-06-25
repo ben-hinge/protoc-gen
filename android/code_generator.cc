@@ -274,15 +274,15 @@ bool CodeGenerator::Generate(
         file->message_type(i),
         &printer);
   }
-
-  printer.Outdent();
-  printer.Print("}\n");
-
+  
   for (int i = 0; i < file->enum_type_count(); ++i) {
     CodeGenerator::GenEnum(
         file->enum_type(i),
         &printer);
   }
+
+  printer.Outdent();
+  printer.Print("}\n");
 
   if (printer.failed()) {
     *error = "CodeGenerator detected write error.";
@@ -551,14 +551,13 @@ void CodeGenerator::GenEnum(
     const google::protobuf::EnumDescriptor *enum_desc,
     google::protobuf::io::Printer *printer) 
 {
-  printer->Print("public enum $name$: Int {\n",
+  printer->Print("public enum $name$ {\n",
                  "name", enum_desc->name());
   printer->Indent();
   for (int i = 0; i < enum_desc->value_count(); ++i) {
     string number = to_string(enum_desc->value(i)->number());
-    printer->Print("case $key$ = $value$\n",
-                   "key", ToCamelCase(enum_desc->value(i)->name(), false),
-                   "value", number);
+    printer->Print("$key$,\n",
+                   "key", ToCamelCase(enum_desc->value(i)->name(), false));
   }
   printer->Outdent();
   printer->Print("}\n\n");
