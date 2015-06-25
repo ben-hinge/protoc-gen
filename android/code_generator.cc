@@ -534,6 +534,10 @@ void CodeGenerator::GenMessage_equality(
       printer->Print(" &&\n");
     }
   }
+  
+  if (0 == message->field_count()) {
+	  printer->Print("this == castObject");
+  }
 
   printer->Outdent();
   printer->Print(");\n");
