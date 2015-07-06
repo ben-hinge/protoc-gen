@@ -261,7 +261,6 @@ bool CodeGenerator::Generate(
       "import com.fasterxml.jackson.databind.ObjectMapper;\n"
       "\n"
       "import java.io.IOException;\n"
-      "import java.io.InputStream;\n"
       "import java.util.List;\n"
       "\n");
 
@@ -301,11 +300,14 @@ void CodeGenerator::GenDescriptor(
   printer->Indent();
   for (int i = 0; i < message->field_count(); ++i) {
     const google::protobuf::FieldDescriptor *field = message->field(i);
-    printer->Print("@JsonProperty(\"$name$\") $type$ $name$;\n",
+    printer->Print("public @JsonProperty(\"$name$\") $type$ $name$;\n",
                    "name", field->camelcase_name(),
                    "type", AndroidTypeForField(field, false));
   }
   printer->Print("\n");
+
+  printer->Print("public $name$() { /* No-op */ }\n\n",
+                 "name", message->name());
 
   printer->Print("public $name$(",
                  "name", message->name());
@@ -368,13 +370,13 @@ void CodeGenerator::GenMessage_fromReader(
     const google::protobuf::Descriptor *message,
     google::protobuf::io::Printer *printer) 
 {
-  printer->Print("public static $name$ fromReader(InputStream inputStream) {\n",
+  printer->Print("public static $name$ fromReader(String json) {\n",
                  "name", message->name());
   printer->Indent();
     
   printer->Print("try {\n");
   printer->Indent();
-  printer->Print("return new ObjectMapper().readValue(inputStream, $name$.class);\n",
+  printer->Print("return new ObjectMapper().readValue(json, $name$.class);\n",
                  "name", message->name());
   printer->Outdent();
   printer->Print("} catch (IOException e) {\n");
@@ -493,7 +495,7 @@ void CodeGenerator::GenMessage_toWriter(
     const google::protobuf::Descriptor *message,
     google::protobuf::io::Printer *printer) 
 {
-  printer->Print("public String toWriter() {\n");
+  printer->Print("public String toJson() {\n");
   printer->Indent();
     
   printer->Print("try {\n");
