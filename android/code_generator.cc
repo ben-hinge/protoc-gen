@@ -257,12 +257,11 @@ bool CodeGenerator::Generate(
   printer.Print(
       "\n"
       "import com.fasterxml.jackson.annotation.JsonProperty;\n"
-	  "import com.fasterxml.jackson.annotation.JsonValue;\n"
-      "import com.fasterxml.jackson.core.JsonProcessingException;\n"
+      "import com.fasterxml.jackson.annotation.JsonValue;\n"
       "import com.fasterxml.jackson.databind.ObjectMapper;\n"
       "\n"
       "import java.io.IOException;\n"
-	  "import java.io.Serializable;\n"
+      "import java.io.Serializable;\n"
       "import java.util.List;\n"
       "\n");
 
@@ -311,6 +310,11 @@ void CodeGenerator::GenDescriptor(
                    "type", AndroidTypeForField(field, false));
   }
   printer->Print("\n");
+
+  if (0 != message->field_count()) {
+    printer->Print("public $name$() { /* no-op */ }\n\n",
+                   "name", message->name());
+  }
 
   printer->Print("public $name$(",
                  "name", message->name());
@@ -510,8 +514,13 @@ void CodeGenerator::GenMessage_equality(
   
   for (int i = 0, lastI = message->field_count() - 1; i <= lastI; ++i) {
     const google::protobuf::FieldDescriptor *field = message->field(i);
-    printer->Print("this.$name$ == castObject.$name$",
-      "name", field->camelcase_name());
+    if (field->type() != google::protobuf::FieldDescriptor::TYPE_STRING) {
+      printer->Print("this.$name$ == castObject.$name$",
+                     "name", field->camelcase_name());
+    } else {
+      printer->Print("this.$name$.equals(castObject.$name$)",
+                     "name", field->camelcase_name());
+    }
     if (i != lastI) {
       printer->Print(" &&\n");
     }
