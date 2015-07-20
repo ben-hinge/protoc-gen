@@ -514,13 +514,8 @@ void CodeGenerator::GenMessage_equality(
   
   for (int i = 0, lastI = message->field_count() - 1; i <= lastI; ++i) {
     const google::protobuf::FieldDescriptor *field = message->field(i);
-    if (field->type() != google::protobuf::FieldDescriptor::TYPE_STRING) {
-      printer->Print("this.$name$ == castObject.$name$",
-                     "name", field->camelcase_name());
-    } else {
-      printer->Print("this.$name$.equals(castObject.$name$)",
-                     "name", field->camelcase_name());
-    }
+    printer->Print(field->type() != google::protobuf::FieldDescriptor::TYPE_STRING ? "this.$name$ == castObject.$name$" : "this.$name$.equals(castObject.$name$)",
+                   "name", field->camelcase_name());
     if (i != lastI) {
       printer->Print(" &&\n");
     }
