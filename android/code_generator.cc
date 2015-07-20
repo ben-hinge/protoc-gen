@@ -300,6 +300,10 @@ void CodeGenerator::GenDescriptor(
   printer->Print("public static class $name$ implements Serializable {\n\n",
                  "name", message->name());
   printer->Indent();
+
+  printer->Print("private static final long serialVersionUID = -$number$L;\n\n",
+                 "number", std::to_string(rand() % 9999999999999 + 1000000000000));
+
   for (int i = 0; i < message->field_count(); ++i) {
     const google::protobuf::FieldDescriptor *field = message->field(i);
     printer->Print("public @JsonProperty(\"$name$\") $type$ $name$;\n",
