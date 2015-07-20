@@ -538,9 +538,19 @@ void CodeGenerator::GenEnum(
   printer->Indent();
   for (int i = 0; i < enum_desc->value_count(); ++i) {
     string number = to_string(enum_desc->value(i)->number());
-    printer->Print("$key$,\n",
+    printer->Print("$key$",
                    "key", ToCamelCase(enum_desc->value(i)->name(), false));
+    if (i == enum_desc->value_count() - 1) {
+      printer->Print(";\n\n");
+    } else {
+      printer->Print(",\n");
+    }
   }
+  printer->Print("@JsonValue\npublic int value() {\n");
+  printer->Indent();
+  printer->Print("return ordinal();\n");
+  printer->Outdent();
+  printer->Print("}\n");
   printer->Outdent();
   printer->Print("}\n\n");
 }
