@@ -257,10 +257,12 @@ bool CodeGenerator::Generate(
   printer.Print(
       "\n"
       "import com.fasterxml.jackson.annotation.JsonProperty;\n"
+	  "import com.fasterxml.jackson.annotation.JsonValue;\n"
       "import com.fasterxml.jackson.core.JsonProcessingException;\n"
       "import com.fasterxml.jackson.databind.ObjectMapper;\n"
       "\n"
       "import java.io.IOException;\n"
+	  "import java.io.Serializable;\n"
       "import java.util.List;\n"
       "\n");
 
@@ -295,7 +297,7 @@ void CodeGenerator::GenDescriptor(
     const google::protobuf::Descriptor *message,
     google::protobuf::io::Printer *printer) 
 {
-  printer->Print("public static class $name$ {\n\n",
+  printer->Print("public static class $name$ implements Serializable {\n\n",
                  "name", message->name());
   printer->Indent();
   for (int i = 0; i < message->field_count(); ++i) {
@@ -305,9 +307,6 @@ void CodeGenerator::GenDescriptor(
                    "type", AndroidTypeForField(field, false));
   }
   printer->Print("\n");
-
-  printer->Print("public $name$() { /* No-op */ }\n\n",
-                 "name", message->name());
 
   printer->Print("public $name$(",
                  "name", message->name());
