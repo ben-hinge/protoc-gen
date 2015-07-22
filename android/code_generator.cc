@@ -336,9 +336,6 @@ void CodeGenerator::GenDescriptor(
   }
   printer->Outdent();
   printer->Print("}\n\n");
-
-  CodeGenerator::GenMessage_fromReader(message, printer);
-  printer->Print("\n");
     
   CodeGenerator::GenMessage_equality(message, printer);
   printer->Print("\n");
@@ -368,28 +365,6 @@ void CodeGenerator::GenDescriptor(
   CodeGenerator::GenMessageBuilder(message, printer);
 
   printer->Print("\n");
-}
-
-void CodeGenerator::GenMessage_fromReader(
-    const google::protobuf::Descriptor *message,
-    google::protobuf::io::Printer *printer) 
-{
-  printer->Print("public static $name$ fromReader(String json) {\n",
-                 "name", message->name());
-  printer->Indent();
-    
-  printer->Print("try {\n");
-  printer->Indent();
-  printer->Print("return new ObjectMapper().readValue(json, $name$.class);\n",
-                 "name", message->name());
-  printer->Outdent();
-  printer->Print("} catch (IOException e) {\n");
-  printer->Indent();
-  printer->Print("e.printStackTrace();\n");
-  printer->Outdent();
-  printer->Print("}\n\nreturn null;\n");
-  printer->Outdent();
-  printer->Print("}\n");
 }
 
 void CodeGenerator::GenMessage_builder(
