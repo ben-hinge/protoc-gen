@@ -258,9 +258,7 @@ bool CodeGenerator::Generate(
       "\n"
       "import com.fasterxml.jackson.annotation.JsonProperty;\n"
       "import com.fasterxml.jackson.annotation.JsonValue;\n"
-      "import com.fasterxml.jackson.databind.ObjectMapper;\n"
       "\n"
-      "import java.io.IOException;\n"
       "import java.io.Serializable;\n"
       "import java.util.List;\n"
       "\n");
