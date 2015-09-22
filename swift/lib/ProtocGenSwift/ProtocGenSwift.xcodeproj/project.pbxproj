@@ -324,6 +324,7 @@
 		BC17DD7F1B04E609003F3DD4 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
+				LastSwiftUpdateCheck = 0700;
 				LastUpgradeCheck = 0620;
 				ORGANIZATIONNAME = TonicDesign;
 				TargetAttributes = {
