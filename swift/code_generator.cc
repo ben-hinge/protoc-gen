@@ -237,6 +237,9 @@ bool CodeGenerator::Generate(
       "/**\n"
       " * @fileoverview Generated Protocol Buffer code for file $file_name$.\n"
       " */\n", "file_name", file_name);
+  printer.Print("\n");
+  printer.Print("import ProtocGenSwift\n");
+  printer.Print("\n");
 
   for (int i = 0; i < file->message_type_count(); ++i) {
   	CodeGenerator::GenMessage_equality(
@@ -396,11 +399,7 @@ void CodeGenerator::GenMessage_fromReader(
     const google::protobuf::Descriptor *message,
     google::protobuf::io::Printer *printer)
 {
-  printer->Print("public class func fromReader(r: Reader) -> $name$ {\n",
-                 "name", message->name());
-  printer->Indent();
-
-  printer->Print("let tagMap: [String:(Int, Bool)] = [ \n");
+  printer->Print("static let readTagMap: [String:(Int, Bool)] = [ \n");
   printer->Indent();
 
   for (int i = 0; i < message->field_count(); ++i) {
@@ -425,7 +424,12 @@ void CodeGenerator::GenMessage_fromReader(
   printer->Outdent();
   printer->Print("]\n\n");
 
-  printer->Print("r.pushTagMap(tagMap)\n\n");
+
+  printer->Print("public class func fromReader(r: Reader) -> $name$ {\n",
+                 "name", message->name());
+  printer->Indent();
+
+  printer->Print("r.pushTagMap(readTagMap)\n\n");
 
   for (int i = 0; i < message->field_count(); ++i) {
     const google::protobuf::FieldDescriptor *field = message->field(i);
@@ -672,11 +676,7 @@ void CodeGenerator::GenMessage_toWriter(
     const google::protobuf::Descriptor *message,
     google::protobuf::io::Printer *printer)
 {
-  printer->Print("public func toWriter(w: Writer) {\n");
-  printer->Indent();
-
-
-  printer->Print("let tagMap: [Int:(String, Bool)] = [ \n");
+  printer->Print("static let writeTagMap: [Int:(String, Bool)] = [ \n");
   printer->Indent();
 
   for (int i = 0; i < message->field_count(); ++i) {
@@ -701,7 +701,11 @@ void CodeGenerator::GenMessage_toWriter(
   printer->Outdent();
   printer->Print("]\n\n");
 
-  printer->Print("w.pushTagMap(tagMap)\n\n");
+  printer->Print("public func toWriter(w: Writer) {\n");
+  printer->Indent();
+
+  printer->Print("w.pushTagMap($name$.writeTagMap)\n\n",
+      "name", message->name());
 
   for (int i = 0; i < message->field_count(); ++i) {
     const google::protobuf::FieldDescriptor *field = message->field(i);

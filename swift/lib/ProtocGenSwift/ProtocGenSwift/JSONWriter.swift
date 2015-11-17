@@ -8,12 +8,12 @@ public class JSONWriter : Writer {
     var tag: Int! = nil
     var isRepeatedStack: [Bool] = []
     
-    public class func withCapacity(capacity: Int) -> Writer? {
+    public class func withCapacity(capacity: Int) throws -> Writer {
         return JSONWriter()
     }
     
-    public func toBuffer() -> NSData {
-        return NSJSONSerialization.dataWithJSONObject(object, options: nil, error: nil)!
+    public func toBuffer() throws -> NSData {
+        return try NSJSONSerialization.dataWithJSONObject(object, options: [])
     }
     
     public func writeTag(tag: Int) {
@@ -63,15 +63,15 @@ public class JSONWriter : Writer {
     }
     
     private func writeValue(v: AnyObject, object: NSMutableDictionary) {
-        if let info = tagMap[tag] {
-            if info.1 {
-                if let array = object[info.0] as? NSMutableArray {
+        if let (key, required) = tagMap[tag] {
+            if required {
+                if let array = object[key] as? NSMutableArray {
                     array.addObject(v)
                 } else {
-                    object[info.0] = NSMutableArray(objects: v)
+                    object[key] = NSMutableArray(objects: v)
                 }
             } else {
-                object[info.0] = v
+                object[key] = v
             }
         } else {
             // error

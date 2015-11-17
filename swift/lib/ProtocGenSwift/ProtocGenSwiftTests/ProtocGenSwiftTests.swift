@@ -24,14 +24,14 @@ class ProtocGenSwiftTests: XCTestCase {
             .build()
     }
     
-    func testJSON() {
-        let writer = JSONWriter.withCapacity(demoMessage.sizeInBytes)!
+    func testJSON() throws {
+        let writer = try JSONWriter.withCapacity(demoMessage.sizeInBytes)
         demoMessage.toWriter(writer)
-        let buffer = writer.toBuffer()
-        var jsonString = NSString(data: buffer, encoding: NSUTF8StringEncoding)
+        let buffer = try writer.toBuffer()
+        let jsonString = NSString(data: buffer, encoding: NSUTF8StringEncoding)
         assert(jsonString == "{\"demoInt32\":42,\"demoNestedMessage\":{\"nestedString\":\"nested string\",\"nestedInt32\":42},\"demoRepeated\":[\"Hello\",\"World\",\"Foo\",\"Bar\"],\"demoDouble\":5,\"demoString\":\"demo string\",\"demoBool\":true,\"demoRepeatedNestedMessage\":[{\"nestedString\":\"nested string\",\"nestedInt32\":42},{\"nestedString\":\"nested string\",\"nestedInt32\":42}],\"demoInt64\":123}")
         
-        let reader = JSONReader.from(buffer)!
+        let reader = try JSONReader.from(buffer)!
         let readDemoMessage = DemoMessage.fromReader(reader)
         assert(demoMessage == readDemoMessage, "read object to match written object")
         assert(demoMessage.demoNestedMessage == readDemoMessage.demoNestedMessage, "read nested object to match written nested object")
@@ -43,10 +43,10 @@ class ProtocGenSwiftTests: XCTestCase {
         assert(demoMessage.demoRepeated == readDemoMessage.demoRepeated, "written value for repeated value should match read repeated value")
     }
     
-    func testProtobuf() {
-        let writer = ProtobufWriter.withCapacity(demoMessage.sizeInBytes)!
+    func testProtobuf() throws {
+        let writer = try ProtobufWriter.withCapacity(demoMessage.sizeInBytes)
         demoMessage.toWriter(writer)
-        let buffer = writer.toBuffer()
+        let buffer = try writer.toBuffer()
         let reader = ProtobufReader.from(buffer)!
         let readDemoMessage = DemoMessage.fromReader(reader)
         assert(demoMessage == readDemoMessage, "read object to match written object")

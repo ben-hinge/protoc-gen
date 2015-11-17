@@ -3,15 +3,19 @@ import Foundation
 public class ProtobufWriter : Writer {
     let data: NSMutableData
     
+    public enum Error: ErrorType {
+        case OutOfMemory
+    }
+    
     init(data: NSMutableData) {
         self.data = data
     }
     
-    public class func withCapacity(capacity: Int) -> Writer? {
-        if let data = NSMutableData(capacity: capacity) {
-            return ProtobufWriter(data: data)
+    public class func withCapacity(capacity: Int) throws -> Writer {
+        guard let data = NSMutableData(capacity: capacity) else {
+            throw Error.OutOfMemory
         }
-        return nil
+        return ProtobufWriter(data: data)
     }
     
     public func toBuffer() -> NSData {
