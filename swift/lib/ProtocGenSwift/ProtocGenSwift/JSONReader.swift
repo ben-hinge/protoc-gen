@@ -31,21 +31,18 @@ public class JSONReader : Reader {
             return repeatedObject!.key
         }
         
-        if let keyValuePair = generator.next() {
-            if let info = tagMap[keyValuePair.key as! String] {
-                if info.1 {
-                    repeatedObject = (key: info.0, generator: (keyValuePair.value as! NSArray).generate())
+        while let (key, value) = generator.next() {
+            if let (tag, repeated) = tagMap[key as! String] {
+                if repeated {
+                    repeatedObject = (key: tag, generator: (value as! NSArray).generate())
                     object = repeatedObject?.generator.next()
                 } else {
-                    object = keyValuePair.value
+                    object = value
                 }
-                return info.0
-            } else {
-                return 0 // Error
+                return tag
             }
-        } else {
-            return 0
         }
+        return 0
     }
     
     public func readByte() -> UInt8 {

@@ -399,32 +399,34 @@ void CodeGenerator::GenMessage_fromReader(
     const google::protobuf::Descriptor *message,
     google::protobuf::io::Printer *printer)
 {
-  printer->Print("static let readTagMap: [String:(Int, Bool)] = [ \n");
-  printer->Indent();
+  printer->Print("static let readTagMap: [String:(Int, Bool)] = ");
+  if (message->field_count() > 0) {
+    printer->Print("[ \n");
+    printer->Indent();
+    for (int i = 0; i < message->field_count(); ++i) {
+      const google::protobuf::FieldDescriptor *field = message->field(i);
 
-  for (int i = 0; i < message->field_count(); ++i) {
-    const google::protobuf::FieldDescriptor *field = message->field(i);
+      string name = field->camelcase_name();
+      string tag = to_string(WireFormatLite::MakeTag(field->number(), WireFormat::WireTypeForField(field)));
+      string isRepeated = "false";
 
-    string name = field->camelcase_name();
-    string tag = to_string(WireFormatLite::MakeTag(field->number(), WireFormat::WireTypeForField(field)));
-    string isRepeated = "false";
+      if (field->is_repeated()) {
+        isRepeated = "true";
+      }
 
-    if (field->is_repeated()) {
-      isRepeated = "true";
+      printer->Print("\"$name$\" : ($tag$, $repeated$)",
+                      "name", name,
+                      "tag", tag,
+                      "repeated", isRepeated);
+
+      i != message->field_count() - 1 ? printer->Print(",\n") : printer->Print("\n");
     }
-
-    printer->Print("\"$name$\" : ($tag$, $repeated$)",
-                    "name", name,
-                    "tag", tag,
-                    "repeated", isRepeated);
-
-    i != message->field_count() - 1 ? printer->Print(",\n") : printer->Print("\n");
+    printer->Outdent();
+    printer->Print("]\n\n");
+  } else {
+    printer->Print("[:]\n\n");
   }
-
-  printer->Outdent();
-  printer->Print("]\n\n");
-
-
+  
   printer->Print("public class func fromReader(r: Reader) -> $name$ {\n",
                  "name", message->name());
   printer->Indent();
@@ -676,30 +678,34 @@ void CodeGenerator::GenMessage_toWriter(
     const google::protobuf::Descriptor *message,
     google::protobuf::io::Printer *printer)
 {
-  printer->Print("static let writeTagMap: [Int:(String, Bool)] = [ \n");
-  printer->Indent();
+  printer->Print("static let writeTagMap: [Int:(String, Bool)] = ");
+  if (message->field_count() > 0) {
+    printer->Print("[ \n");
+    printer->Indent();
+    for (int i = 0; i < message->field_count(); ++i) {
+      const google::protobuf::FieldDescriptor *field = message->field(i);
 
-  for (int i = 0; i < message->field_count(); ++i) {
-    const google::protobuf::FieldDescriptor *field = message->field(i);
+      string name = field->camelcase_name();
+      string tag = to_string(WireFormatLite::MakeTag(field->number(), WireFormat::WireTypeForField(field)));
+      string isRepeated = "false";
 
-    string name = field->camelcase_name();
-    string tag = to_string(WireFormatLite::MakeTag(field->number(), WireFormat::WireTypeForField(field)));
-    string isRepeated = "false";
+      if (field->is_repeated()) {
+        isRepeated = "true";
+      }
 
-    if (field->is_repeated()) {
-      isRepeated = "true";
+      printer->Print("$tag$ : (\"$name$\", $repeated$)",
+                      "tag", tag,
+                      "name", name,
+                      "repeated", isRepeated);
+
+      i != message->field_count() - 1 ? printer->Print(",\n") : printer->Print("\n");
     }
 
-    printer->Print("$tag$ : (\"$name$\", $repeated$)",
-                    "tag", tag,
-                    "name", name,
-                    "repeated", isRepeated);
-
-    i != message->field_count() - 1 ? printer->Print(",\n") : printer->Print("\n");
+    printer->Outdent();
+    printer->Print("]\n\n");
+  } else {
+    printer->Print("[:]\n\n");
   }
-
-  printer->Outdent();
-  printer->Print("]\n\n");
 
   printer->Print("public func toWriter(w: Writer) {\n");
   printer->Indent();
@@ -795,74 +801,78 @@ void CodeGenerator::GenMessage_sizeOf(
   printer->Print(") -> Int {\n");
   printer->Indent();
 
-  printer->Print("var n = 0\n\n");
+  if (message->field_count() > 0) {
+    printer->Print("var n = 0\n\n");
+    for (int i = 0; i < message->field_count(); ++i) {
+      const google::protobuf::FieldDescriptor *field = message->field(i);
+      string name = field->camelcase_name();
 
-  for (int i = 0; i < message->field_count(); ++i) {
-    const google::protobuf::FieldDescriptor *field = message->field(i);
-    string name = field->camelcase_name();
+      if (field->is_optional()) {
+        string foo = "v";
+        if (field->type() == google::protobuf::FieldDescriptor::TYPE_BOOL || field->type() == google::protobuf::FieldDescriptor::TYPE_FLOAT || field->type() == google::protobuf::FieldDescriptor::TYPE_DOUBLE) {
+            foo = "_";
+        }
 
-    if (field->is_optional()) {
-      string foo = "v";
-      if (field->type() == google::protobuf::FieldDescriptor::TYPE_BOOL || field->type() == google::protobuf::FieldDescriptor::TYPE_FLOAT || field->type() == google::protobuf::FieldDescriptor::TYPE_DOUBLE) {
-          foo = "_";
+        printer->Print("if let $foo$ = $name$ {\n",
+                         "foo", foo,
+                         "name", name);
+        printer->Indent();
+        name = "v";
+      } else if (field->is_repeated()) {
+        printer->Print("for v in $name$ {\n",
+                       "name", name);
+        printer->Indent();
+        name = "v";
       }
 
-      printer->Print("if let $foo$ = $name$ {\n",
-                       "foo", foo,
+      int tag = WireFormatLite::MakeTag(field->number(), WireFormat::WireTypeForField(field));
+      string size_of_tag = std::to_string(sizeOfVarInt(tag));
+
+      if (field->type() == google::protobuf::FieldDescriptor::TYPE_MESSAGE) {
+        printer->Print("n += $size_of_tag$ + sizeOfVarInt($name$.sizeInBytes) + $name$.sizeInBytes\n",
+                       "name", name,
+                       "size_of_tag", size_of_tag);
+      } else if (field->type() == google::protobuf::FieldDescriptor::TYPE_ENUM) {
+        printer->Print("n += $size_of_tag$ + sizeOfVarInt($name$.rawValue)\n",
+                       "name", name,
+                       "size_of_tag", size_of_tag);
+      } else if (field->type() == google::protobuf::FieldDescriptor::TYPE_BOOL) { // <-
+        printer->Print("n += $size_of_tag$ + 1\n",
+                       "size_of_tag", size_of_tag);
+      } else if (field->type() == google::protobuf::FieldDescriptor::TYPE_INT32) {
+        printer->Print("n += $size_of_tag$ + sizeOfVarInt(Int($name$))\n",
+                       "size_of_tag", size_of_tag,
                        "name", name);
-      printer->Indent();
-      name = "v";
-    } else if (field->is_repeated()) {
-      printer->Print("for v in $name$ {\n",
-                     "name", name);
-      printer->Indent();
-      name = "v";
+      } else if (field->type() == google::protobuf::FieldDescriptor::TYPE_INT64) {
+        printer->Print("n += $size_of_tag$ + sizeOfVarInt(Int($name$))\n",
+                       "size_of_tag", size_of_tag,
+                       "name", name);
+      } else if (field->type() == google::protobuf::FieldDescriptor::TYPE_FLOAT) { // <-
+        printer->Print("n += $size_of_tag$ + 4\n",
+                       "size_of_tag", size_of_tag);
+      } else if (field->type() == google::protobuf::FieldDescriptor::TYPE_DOUBLE) { // <-
+        printer->Print("n += $size_of_tag$ + 8\n",
+                       "size_of_tag", size_of_tag);
+      } else if (field->type() == google::protobuf::FieldDescriptor::TYPE_STRING) {
+        printer->Print("n += $size_of_tag$ + sizeOfString($name$)\n",
+                       "size_of_tag", size_of_tag,
+                       "name", name);
+      } else {
+        // TODO: Other types
+      }
+
+      if (field->is_optional() || field->is_repeated()) {
+        printer->Outdent();
+        printer->Print("}\n");
+      }
     }
 
-    int tag = WireFormatLite::MakeTag(field->number(), WireFormat::WireTypeForField(field));
-    string size_of_tag = std::to_string(sizeOfVarInt(tag));
+    printer->Print("\n"
+                   "return n\n");
 
-    if (field->type() == google::protobuf::FieldDescriptor::TYPE_MESSAGE) {
-      printer->Print("n += $size_of_tag$ + sizeOfVarInt($name$.sizeInBytes) + $name$.sizeInBytes\n",
-                     "name", name,
-                     "size_of_tag", size_of_tag);
-    } else if (field->type() == google::protobuf::FieldDescriptor::TYPE_ENUM) {
-      printer->Print("n += $size_of_tag$ + sizeOfVarInt($name$.rawValue)\n",
-                     "name", name,
-                     "size_of_tag", size_of_tag);
-    } else if (field->type() == google::protobuf::FieldDescriptor::TYPE_BOOL) { // <-
-      printer->Print("n += $size_of_tag$ + 1\n",
-                     "size_of_tag", size_of_tag);
-    } else if (field->type() == google::protobuf::FieldDescriptor::TYPE_INT32) {
-      printer->Print("n += $size_of_tag$ + sizeOfVarInt(Int($name$))\n",
-                     "size_of_tag", size_of_tag,
-                     "name", name);
-    } else if (field->type() == google::protobuf::FieldDescriptor::TYPE_INT64) {
-      printer->Print("n += $size_of_tag$ + sizeOfVarInt(Int($name$))\n",
-                     "size_of_tag", size_of_tag,
-                     "name", name);
-    } else if (field->type() == google::protobuf::FieldDescriptor::TYPE_FLOAT) { // <-
-      printer->Print("n += $size_of_tag$ + 4\n",
-                     "size_of_tag", size_of_tag);
-    } else if (field->type() == google::protobuf::FieldDescriptor::TYPE_DOUBLE) { // <-
-      printer->Print("n += $size_of_tag$ + 8\n",
-                     "size_of_tag", size_of_tag);
-    } else if (field->type() == google::protobuf::FieldDescriptor::TYPE_STRING) {
-      printer->Print("n += $size_of_tag$ + sizeOfString($name$)\n",
-                     "size_of_tag", size_of_tag,
-                     "name", name);
-    } else {
-      // TODO: Other types
-    }
-
-    if (field->is_optional() || field->is_repeated()) {
-      printer->Outdent();
-      printer->Print("}\n");
-    }
+  } else {
+    printer->Print("return 0\n");
   }
-
-  printer->Print("\n"
-                 "return n\n");
 
   printer->Outdent();
   printer->Print("}\n");
