@@ -48,7 +48,7 @@ public class ProtobufReader : Reader {
         var v: UInt = 0
         var s: UInt = 0
         while true {
-            var b = readByte()
+            let b = readByte()
             v |= (UInt(b & 0x7F) << s)
             s += 7
             if 0 == (b & 0x80) {
@@ -109,7 +109,7 @@ public class ProtobufReader : Reader {
         var l = readVarInt()
         while (l > 0) {
             var c = UInt32(readByte())
-            var v = c >> 4
+            let v = c >> 4
             if (v > 13) {
                 c = (((c & 0x0F) << 12) | ((UInt32(readByte()) & 0x3F) << 6) | (UInt32(readByte()) & 0x3F))
                 l -= 3
@@ -125,7 +125,7 @@ public class ProtobufReader : Reader {
     }
     
     public func pushLimit(limit: Int) -> Int {
-        var oldLimit = self.limit
+        let oldLimit = self.limit
         self.limit = self.offset + limit
         return oldLimit
     }
