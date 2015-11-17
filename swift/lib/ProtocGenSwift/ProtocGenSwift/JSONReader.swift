@@ -1,7 +1,7 @@
 import Foundation
 
 public class JSONReader : Reader {
-    typealias RepeatedObject = (key: Int, generator: NSArray.Generator)
+    typealias RepeatedObject = (key: Int, generator: AnyGenerator<AnyObject>)
     
     var generatorStack: [NSDictionary.Generator] = []
     var generator: NSDictionary.Generator
@@ -34,7 +34,19 @@ public class JSONReader : Reader {
         while let (key, value) = generator.next() {
             if let (tag, repeated) = tagMap[key as! String] {
                 if repeated {
-                    repeatedObject = (key: tag, generator: (value as! NSArray).generate())
+                    if let array = value as? [AnyObject] {
+                        var generator = array.generate()
+                        repeatedObject = (key: tag, generator: anyGenerator { generator.next() })
+                    } else if let dict = value as? [String: AnyObject] {
+                        var generator = dict.generate()
+                        repeatedObject = (key: tag, generator: anyGenerator {
+                            if let (key, value) = generator.next() {
+                                return ["key": key, "value": value]
+                            } else {
+                                return nil
+                            }
+                        })
+                    }
                     object = repeatedObject?.generator.next()
                 } else {
                     object = value
