@@ -306,7 +306,7 @@ void CodeGenerator::GenDescriptor(
   }
   printer->Print("\n");
 
-  printer->Print("init(sizeInBytes: Int");
+  printer->Print("public required init(sizeInBytes: Int");
   for (int i = 0, lastI = message->field_count() - 1; i <= lastI; ++i) {
     printer->Print(", ");
     const google::protobuf::FieldDescriptor *field = message->field(i);
@@ -427,8 +427,7 @@ void CodeGenerator::GenMessage_fromReader(
     printer->Print("[:]\n\n");
   }
   
-  printer->Print("public class func fromReader(r: Reader) -> $name$ {\n",
-                 "name", message->name());
+  printer->Print("public class func fromReader(r: Reader) -> Self {\n");
   printer->Indent();
 
   printer->Print("r.pushTagMap(readTagMap)\n\n");
@@ -546,8 +545,7 @@ void CodeGenerator::GenMessage_fromReader(
   }
   printer->Print(")\n");
 
-  printer->Print("return $name$(sizeInBytes: sizeInBytes",
-                  "name", message->name());
+  printer->Print("return self.init(sizeInBytes: sizeInBytes");
   for (int i = 0, lastI = message->field_count() - 1; i <= lastI; ++i) {
     printer->Print(", ");
     const google::protobuf::FieldDescriptor *field = message->field(i);
