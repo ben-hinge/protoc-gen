@@ -5,6 +5,7 @@ class ProtocGenSwiftTests: XCTestCase {
     
     var demoNestedMessage: DemoMessage.DemoNestedMessage!
     var demoMessage: DemoMessage!
+    var demoMessageEmptyArray: DemoMessage!
     
     override func setUp() {
         demoNestedMessage = DemoMessage.DemoNestedMessage.builder()
@@ -21,6 +22,12 @@ class ProtocGenSwiftTests: XCTestCase {
             .setDemoNestedMessage(demoNestedMessage)
             .setDemoRepeated(["Hello", "World", "Foo", "Bar"])
             .setDemoRepeatedNestedMessage([demoNestedMessage, demoNestedMessage])
+            .build()
+        
+        let emptyNestedMessage = DemoMessage.DemoNestedMessage.builder().build()
+        
+        demoMessageEmptyArray = DemoMessage.builder()
+            .setDemoRepeatedNestedMessage([emptyNestedMessage])
             .build()
     }
     
@@ -42,6 +49,21 @@ class ProtocGenSwiftTests: XCTestCase {
             assert(demoMessage.demoBool == readDemoMessage.demoBool, "written value for message bool should match read bool value")
             assert(demoMessage.demoString == readDemoMessage.demoString, "written value for message string should match read string value")
             assert(demoMessage.demoRepeated == readDemoMessage.demoRepeated, "written value for repeated value should match read repeated value")
+        }catch {
+            XCTFail()
+        }
+    }
+    
+    func testJSONReadArray() {
+        do {
+            let writer = try JSONWriter.withCapacity(demoMessageEmptyArray.sizeInBytes)
+            demoMessageEmptyArray.toWriter(writer)
+            let jsonString = "{\"demoRepeatedNestedMessage\":[]}"
+            let jsonData = jsonString.dataUsingEncoding(NSUTF8StringEncoding)!
+            
+            let reader = try JSONReader.from(jsonData)!
+            let readDemoMessage = DemoMessage.fromReader(reader)
+            XCTAssertTrue(demoMessageEmptyArray.demoRepeated == readDemoMessage.demoRepeated, "written value for repeated value should match read repeated value")
         }catch {
             XCTFail()
         }
