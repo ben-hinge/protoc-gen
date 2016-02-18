@@ -5,7 +5,7 @@ class ProtocGenSwiftTests: XCTestCase {
     
     var demoNestedMessage: DemoMessage.DemoNestedMessage!
     var demoMessage: DemoMessage!
-    var demoMessageEmptyArray: DemoMessage!
+    var demoMessageWithEmptyNestedArray: DemoMessage!
     
     override func setUp() {
         demoNestedMessage = DemoMessage.DemoNestedMessage.builder()
@@ -26,7 +26,7 @@ class ProtocGenSwiftTests: XCTestCase {
         
         let emptyNestedMessage = DemoMessage.DemoNestedMessage.builder().build()
         
-        demoMessageEmptyArray = DemoMessage.builder()
+        demoMessageWithEmptyNestedArray = DemoMessage.builder()
             .setDemoRepeatedNestedMessage([emptyNestedMessage])
             .build()
     }
@@ -56,14 +56,14 @@ class ProtocGenSwiftTests: XCTestCase {
     
     func testJSONReadArray() {
         do {
-            let writer = try JSONWriter.withCapacity(demoMessageEmptyArray.sizeInBytes)
-            demoMessageEmptyArray.toWriter(writer)
+            let writer = try JSONWriter.withCapacity(demoMessageWithEmptyNestedArray.sizeInBytes)
+            demoMessageWithEmptyNestedArray.toWriter(writer)
             let jsonString = "{\"demoRepeatedNestedMessage\":[]}"
             let jsonData = jsonString.dataUsingEncoding(NSUTF8StringEncoding)!
             
             let reader = try JSONReader.from(jsonData)!
             let readDemoMessage = DemoMessage.fromReader(reader)
-            XCTAssertTrue(demoMessageEmptyArray.demoRepeated == readDemoMessage.demoRepeated, "written value for repeated value should match read repeated value")
+            XCTAssertTrue(demoMessageWithEmptyNestedArray.demoRepeated == readDemoMessage.demoRepeated, "written value for repeated value should match read repeated value")
         }catch {
             XCTFail()
         }
