@@ -126,7 +126,7 @@ public class JSONReader : Reader {
     }
     
     public func pushTagMap(map: [String:(Int, Bool)]) {
-        if nil != self.tagMap && object != nil {
+        if nil != self.tagMap && nil != object {
             tagMapStack.append(self.tagMap)
             generatorStack.append(generator)
             generator = (object as! NSDictionary).generate()
