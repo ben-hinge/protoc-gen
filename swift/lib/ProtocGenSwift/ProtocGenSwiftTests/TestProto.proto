@@ -3,4 +3,8 @@
 
 message TestProto {
     optional string name = 1;
+    message TestNested {
+        optional string id = 1;
+    }
+    repeated TestNested nested = 2;
 }
