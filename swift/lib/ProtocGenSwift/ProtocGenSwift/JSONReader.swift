@@ -34,12 +34,18 @@ public class JSONReader : Reader {
         while let (key, value) = generator.next() {
             if let (tag, repeated) = tagMap[key as! String] {
                 if repeated {
-                    repeatedObject = (key: tag, generator: (value as! NSArray).generate())
-                    object = repeatedObject?.generator.next()
+                    if let array = value as? NSArray where array.count > 0 {
+                        repeatedObject = (key: tag, generator: array.generate())
+                        object = repeatedObject?.generator.next()
+                    } else {
+                        continue
+                    }
                 } else {
                     object = value
                 }
                 return tag
+            } else {
+                return -1 // Unknown
             }
         }
         return 0

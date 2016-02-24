@@ -516,9 +516,14 @@ void CodeGenerator::GenMessage_fromReader(
 
     printer->Outdent();
   }
-  printer->Print("default:\n");
+  printer->Print("0:\n");
   printer->Indent();
   printer->Print("break loop\n");
+  printer->Outdent();
+  //
+  printer->Print("default:\n");
+  printer->Indent();
+  printer->Print("continue\n");
   printer->Outdent();
   //
   printer->Print("}\n");
