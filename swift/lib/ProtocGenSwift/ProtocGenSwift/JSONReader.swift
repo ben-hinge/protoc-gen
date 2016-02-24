@@ -45,7 +45,7 @@ public class JSONReader : Reader {
                 }
                 return tag
             } else {
-                return -1 // Unknown
+                continue
             }
         }
         return 0
