@@ -1,0 +1,6 @@
+//  Copyright © 2016 TonicDesign. All rights reserved.
+//
+
+message TestProto {
+    optional string name = 1;
+}

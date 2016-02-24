@@ -88,4 +88,19 @@ class ProtocGenSwiftTests: XCTestCase {
             XCTFail()
         }
     }
+    
+    func testProtoGen() {
+        
+        do {
+            let jsonString = "{\"name\":\"test\"}"
+            let jsonData = jsonString.dataUsingEncoding(NSUTF8StringEncoding)!
+            
+            let reader = try JSONReader.from(jsonData)!
+            let proto: TestProto = TestProto.fromReader(reader)
+            
+            assert(proto.name != nil)
+        } catch {
+            XCTFail()
+        }
+    }
 }
