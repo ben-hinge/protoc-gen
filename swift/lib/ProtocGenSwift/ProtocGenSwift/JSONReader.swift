@@ -32,15 +32,23 @@ public class JSONReader : Reader {
         }
         
         while let (key, value) = generator.next() {
-            if let (tag, repeated) = tagMap[key as! String] {
-                if repeated {
-                    repeatedObject = (key: tag, generator: (value as! NSArray).generate())
-                    object = repeatedObject?.generator.next()
-                } else {
-                    object = value
-                }
-                return tag
+            guard let key = key as? String else {
+                continue
             }
+            guard let (tag, repeated) = tagMap[key] else {
+                continue
+            }
+            
+            if repeated {
+                guard let array = value as? NSArray where array.count > 0 else {
+                    continue
+                }
+                repeatedObject = (key: tag, generator: array.generate())
+                object = repeatedObject?.generator.next()
+            } else {
+                object = value
+            }
+            return tag
         }
         return 0
     }
