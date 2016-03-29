@@ -119,4 +119,20 @@ class ProtocGenSwiftTests: XCTestCase {
             XCTFail()
         }
     }
+    
+    func testEmptyNested() {
+        
+        do {
+            let jsonString = "{\"name\":\"test\",\"object\":null}"
+            let jsonData = jsonString.dataUsingEncoding(NSUTF8StringEncoding)!
+            
+            let reader = try JSONReader.from(jsonData)!
+            let proto: TestProto = TestProto.fromReader(reader)
+            
+            assert(proto.name != nil)
+            assert(proto.nested != nil)
+        } catch {
+            XCTFail()
+        }
+    }
 }

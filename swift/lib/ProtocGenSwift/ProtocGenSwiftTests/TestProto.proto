@@ -5,4 +5,5 @@ message TestProto {
         optional string id = 1;
     }
     repeated TestNested nested = 2;
+    optional TestNested object = 3;
 }
