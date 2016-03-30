@@ -130,7 +130,7 @@ class ProtocGenSwiftTests: XCTestCase {
             let proto: TestProto = TestProto.fromReader(reader)
             
             assert(proto.name != nil)
-            assert(proto.nested != nil)
+            assert(proto.object == nil)
         } catch {
             XCTFail()
         }
