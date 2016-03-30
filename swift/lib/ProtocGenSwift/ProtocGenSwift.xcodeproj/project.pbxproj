@@ -7,8 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		2B918EC01CAB720E00420055 /* TestProto.proto in Sources */ = {isa = PBXBuildFile; fileRef = 46F11FCC1C7DEC8B0031AE92 /* TestProto.proto */; };
-		46F11FCD1C7DEC8B0031AE92 /* TestProto.proto in Sources */ = {isa = PBXBuildFile; fileRef = 46F11FCC1C7DEC8B0031AE92 /* TestProto.proto */; };
+		2B918EC21CAC5B9600420055 /* TestProto.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B918EC11CAC5B9600420055 /* TestProto.swift */; };
+		2B918EC31CAC5B9600420055 /* TestProto.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B918EC11CAC5B9600420055 /* TestProto.swift */; };
 		BC17DD941B04E609003F3DD4 /* ProtocGenSwift.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BC17DD881B04E609003F3DD4 /* ProtocGenSwift.framework */; };
 		BC17DD9B1B04E609003F3DD4 /* ProtocGenSwiftTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC17DD9A1B04E609003F3DD4 /* ProtocGenSwiftTests.swift */; };
 		BC17DDA81B04E641003F3DD4 /* JSONReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC17DDA51B04E641003F3DD4 /* JSONReader.swift */; };
@@ -35,31 +35,6 @@
 		F9D087D41BFB81DD00CC513D /* code_generator.cc in Sources */ = {isa = PBXBuildFile; fileRef = F9D087CE1BFB81D700CC513D /* code_generator.cc */; };
 		F9D087D51BFB81DD00CC513D /* protoc_gen_swift.cc in Sources */ = {isa = PBXBuildFile; fileRef = F9D087D01BFB81D700CC513D /* protoc_gen_swift.cc */; };
 /* End PBXBuildFile section */
-
-/* Begin PBXBuildRule section */
-		2B918EBF1CAB71DF00420055 /* PBXBuildRule */ = {
-			isa = PBXBuildRule;
-			compilerSpec = com.apple.compilers.proxy.script;
-			filePatterns = "*.proto";
-			fileType = pattern.proxy;
-			isEditable = 1;
-			outputFiles = (
-				"${PROJECT_DERIVED_FILE_DIR}/${INPUT_FILE_BASE}.pb.swift",
-			);
-			script = "/usr/local/bin/protoc --plugin=\"$PROJECT_DIR/../../protoc-gen-swift\" --proto_path=\"$INPUT_FILE_DIR\" \"$INPUT_FILE_PATH\" --swift_out=\"$PROJECT_DERIVED_FILE_DIR\"";
-		};
-		46F11FCA1C7DEC2E0031AE92 /* PBXBuildRule */ = {
-			isa = PBXBuildRule;
-			compilerSpec = com.apple.compilers.proxy.script;
-			filePatterns = "*.proto";
-			fileType = pattern.proxy;
-			isEditable = 1;
-			outputFiles = (
-				"${PROJECT_DERIVED_FILE_DIR}/${INPUT_FILE_BASE}.pb.swift",
-			);
-			script = "/usr/local/bin/protoc --plugin=\"$PROJECT_DIR/../../protoc-gen-swift\" --proto_path=\"$INPUT_FILE_DIR\" \"$INPUT_FILE_PATH\" --swift_out=\"$PROJECT_DERIVED_FILE_DIR\"";
-		};
-/* End PBXBuildRule section */
 
 /* Begin PBXContainerItemProxy section */
 		BC17DD951B04E609003F3DD4 /* PBXContainerItemProxy */ = {
@@ -91,6 +66,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		2B918EC11CAC5B9600420055 /* TestProto.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TestProto.swift; sourceTree = "<group>"; };
 		46F11FCC1C7DEC8B0031AE92 /* TestProto.proto */ = {isa = PBXFileReference; explicitFileType = sourcecode.swift; fileEncoding = 4; path = TestProto.proto; sourceTree = "<group>"; };
 		BC17DD881B04E609003F3DD4 /* ProtocGenSwift.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = ProtocGenSwift.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		BC17DD8C1B04E609003F3DD4 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -252,6 +228,7 @@
 			isa = PBXGroup;
 			children = (
 				BC17DDB31B04E72C003F3DD4 /* Test.swift */,
+				2B918EC11CAC5B9600420055 /* TestProto.swift */,
 			);
 			name = Generated;
 			sourceTree = "<group>";
@@ -349,7 +326,6 @@
 				BC17DD911B04E609003F3DD4 /* Resources */,
 			);
 			buildRules = (
-				46F11FCA1C7DEC2E0031AE92 /* PBXBuildRule */,
 			);
 			dependencies = (
 				BC17DD961B04E609003F3DD4 /* PBXTargetDependency */,
@@ -386,7 +362,6 @@
 				BC9DD48E1B176D0300BB199C /* Resources */,
 			);
 			buildRules = (
-				2B918EBF1CAB71DF00420055 /* PBXBuildRule */,
 			);
 			dependencies = (
 				BC9DD4931B176D0300BB199C /* PBXTargetDependency */,
@@ -512,7 +487,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				BC17DD9B1B04E609003F3DD4 /* ProtocGenSwiftTests.swift in Sources */,
-				46F11FCD1C7DEC8B0031AE92 /* TestProto.proto in Sources */,
+				2B918EC21CAC5B9600420055 /* TestProto.swift in Sources */,
 				BC17DDB41B04E72C003F3DD4 /* Test.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -536,7 +511,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				BC9DD4981B176D0300BB199C /* ProtocGenSwift_OSX_Tests.swift in Sources */,
-				2B918EC01CAB720E00420055 /* TestProto.proto in Sources */,
+				2B918EC31CAC5B9600420055 /* TestProto.swift in Sources */,
 				BC2BEFB91B20E1B8008B5294 /* ProtocGenSwiftTests.swift in Sources */,
 				BC2BEFBA1B20E1D7008B5294 /* Test.swift in Sources */,
 			);
