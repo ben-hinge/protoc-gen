@@ -344,6 +344,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = BC17DDA11B04E609003F3DD4 /* Build configuration list for PBXNativeTarget "ProtocGenSwiftTests" */;
 			buildPhases = (
+				2B918EC41CAC687500420055 /* ShellScript */,
 				BC17DD8F1B04E609003F3DD4 /* Sources */,
 				BC17DD901B04E609003F3DD4 /* Frameworks */,
 				BC17DD911B04E609003F3DD4 /* Resources */,
@@ -381,6 +382,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = BC9DD49C1B176D0300BB199C /* Build configuration list for PBXNativeTarget "ProtocGenSwift(OSX)Tests" */;
 			buildPhases = (
+				2B918EC51CAC68A000420055 /* ShellScript */,
 				BC9DD48C1B176D0300BB199C /* Sources */,
 				BC9DD48D1B176D0300BB199C /* Frameworks */,
 				BC9DD48E1B176D0300BB199C /* Resources */,
@@ -491,6 +493,35 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		2B918EC41CAC687500420055 /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "if [ ! -x /usr/local/bin/protoc ]; then\necho \"error: Protocol Buffers is required (brew install protobuf)\"\nexit -1\nfi\n\nPROTOC_GEN_SWIFT=\"$PROJECT_DIR/../../protoc-gen-swift\"\nif [ ! -x \"$PROTOC_GEN_SWIFT\" ]; then\n(cd `dirname \"$PROTOC_GEN_SWIFT\"`; env -i make)\nfi";
+		};
+		2B918EC51CAC68A000420055 /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "if [ ! -x /usr/local/bin/protoc ]; then\necho \"error: Protocol Buffers is required (brew install protobuf)\"\nexit -1\nfi\n\nPROTOC_GEN_SWIFT=\"$PROJECT_DIR/../../protoc-gen-swift\"\nif [ ! -x \"$PROTOC_GEN_SWIFT\" ]; then\n(cd `dirname \"$PROTOC_GEN_SWIFT\"`; env -i make)\nfi";
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		BC17DD831B04E609003F3DD4 /* Sources */ = {
