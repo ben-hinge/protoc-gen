@@ -32,6 +32,9 @@ public class JSONReader : Reader {
         }
         
         while let (key, value) = generator.next() {
+            if value is NSNull {
+                continue
+            }
             guard let key = key as? String else {
                 continue
             }
