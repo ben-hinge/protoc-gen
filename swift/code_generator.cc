@@ -260,7 +260,7 @@ bool CodeGenerator::Generate(
   printer.Print("repeat {\n");
   printer.Indent();
   printer.Print("x = x >> 7\n");
-  printer.Print("n++\n");
+  printer.Print("n = n + 1\n");
   printer.Outdent();
   printer.Print("} while (x > 0)\n");
   printer.Print("return n\n");
