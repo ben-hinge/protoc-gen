@@ -33,7 +33,7 @@ class ProtocGenSwiftTests: XCTestCase {
     
     func testJSON() {
         do {
-            let writer = try JSONWriter.withCapacity(demoMessage.sizeInBytes)
+            let writer = JSONWriter.withCapacity(demoMessage.sizeInBytes)
             demoMessage.toWriter(writer)
             let buffer = try writer.toBuffer()
             let jsonString = NSString(data: buffer, encoding: NSUTF8StringEncoding)
@@ -56,7 +56,7 @@ class ProtocGenSwiftTests: XCTestCase {
     
     func testJSONReadArray() {
         do {
-            let writer = try JSONWriter.withCapacity(demoMessageWithEmptyNestedArray.sizeInBytes)
+            let writer = JSONWriter.withCapacity(demoMessageWithEmptyNestedArray.sizeInBytes)
             demoMessageWithEmptyNestedArray.toWriter(writer)
             let jsonString = "{\"demoRepeatedNestedMessage\":[]}"
             let jsonData = jsonString.dataUsingEncoding(NSUTF8StringEncoding)!

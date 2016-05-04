@@ -8,7 +8,7 @@ public class JSONWriter : Writer {
     var tag: Int! = nil
     var isRepeatedStack: [Bool] = []
     
-    public class func withCapacity(capacity: Int) throws -> Writer {
+    public class func withCapacity(capacity: Int) -> Writer {
         return JSONWriter()
     }
     
