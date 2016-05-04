@@ -435,7 +435,7 @@ private func sizeOfVarInt(v: Int) -> Int {
   var x = v
   repeat {
     x = x >> 7
-    n++
+    n += 1
   } while (x > 0)
   return n
 }

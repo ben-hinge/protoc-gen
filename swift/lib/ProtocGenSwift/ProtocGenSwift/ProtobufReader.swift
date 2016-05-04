@@ -37,7 +37,9 @@ public class ProtobufReader : Reader {
         if limit != -1 && offset == limit {
             return 0
         }
-        return _readByte(offset++)
+        let readByte = _readByte(offset)
+        offset += 1
+        return readByte
     }
     
     public func readVarInt() -> Int {
@@ -70,7 +72,7 @@ public class ProtobufReader : Reader {
         let numberOfBytes = self.readVarInt()
         let data = NSMutableData(capacity: numberOfBytes)!
         let ptr = UnsafeMutablePointer<UInt8>(data.bytes)
-        for var i = 0; i < numberOfBytes; i++ {
+        for i in 0..<numberOfBytes {
             ptr[i] = self.readByte()
         }
         return data

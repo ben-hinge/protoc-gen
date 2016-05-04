@@ -56,7 +56,7 @@ public class ProtobufWriter : Writer {
         let numberOfBytes = v.length
         self.writeVarInt(numberOfBytes)
         let ptr = UnsafePointer<UInt8>(v.bytes)
-        for var i = 0; i < numberOfBytes; i++ {
+        for i in 0..<numberOfBytes {
             self.writeByte(ptr[i])
         }
     }
